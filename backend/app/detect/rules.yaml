@@ -35,6 +35,7 @@ indicators:
   LG-03: {weight: 0.35}                                      # sensitive action after a suspicious login
   AP-01: {weight: 0.55, params: {min_applicants: 3, window_hours: 72}}  # same device + shared contact/payout, >=3 applicants in 72h
   AP-02: {weight: 0.30, params: {count: 3, days: 7}}         # application velocity
+  AP-03: {weight: 0.50, params: {share: 0.7, hours: 48}}     # loan disbursement -> >=70% to new recipients in 48h (P1, F04)
   ID-01: {weight: 0.35}                                      # application contact differs from profile and is reused by others
 
 mitigations:

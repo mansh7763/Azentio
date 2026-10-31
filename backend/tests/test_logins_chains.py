@@ -92,3 +92,23 @@ def test_logins_without_device_skipped(cfg):
     bursts = login_bursts(ds, cfg)
     ids = {s.indicator_id for s in login_signals(ds, cfg, bursts)}
     assert "DV-03" not in ids and {"LG-01", "LG-02"} <= ids
+
+
+def _logins(rows):
+    return pd.DataFrame([{"event_id": e, "customer_id": "C1", "timestamp": t, "device_id": "D1", "outcome": o}
+                         for e, t, o in rows])
+
+
+def test_single_typo_is_not_a_burst(cfg):
+    """LG-T3: one failure then a success on the usual device."""
+    rows = [(f"H{i}", f"2026-09-0{i + 1}T10:00:00Z", "success") for i in range(6)]
+    rows += [("F1", "2026-09-20T10:00:00Z", "fail"), ("OK", "2026-09-20T10:01:00Z", "success")]
+    ds = prepare(Dataset.from_frames(logins=_logins(rows)), cfg)
+    assert login_bursts(ds, cfg) == []
+
+
+def test_failures_spread_over_days_are_not_a_burst(cfg):
+    """LG-T5: six failures across three days."""
+    rows = [(f"F{i}", f"2026-09-{10 + i // 2:02d}T{8 + 6 * (i % 2):02d}:00:00Z", "fail") for i in range(6)]
+    ds = prepare(Dataset.from_frames(logins=_logins(rows)), cfg)
+    assert login_bursts(ds, cfg) == []

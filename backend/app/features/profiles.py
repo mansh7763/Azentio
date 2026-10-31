@@ -6,10 +6,9 @@ import numpy as np
 import pandas as pd
 
 from app.detect.config import RulesConfig
-from app.detect.dataset import Dataset
+from app.detect.dataset import Dataset, is_inbound
 
 SUCCESS = {"success", "successful", "completed", "complete", "posted", "ok", "settled"}
-INBOUND = {"credit", "inbound", "deposit", "incoming", "refund", "salary_credit"}
 PROFILE_COLUMNS = ["customer_id", "prior_n", "prior_median", "prior_mad", "prior_p95", "prior_max", "denom", "z",
                    "is_new_payee", "is_first_payment", "prior_same_payee_similar", "prior_same_payee_times",
                    "baseline_source"]
@@ -25,7 +24,7 @@ def is_successful(status) -> bool:
 
 
 def is_outbound(kind) -> bool:
-    return kind is None or (isinstance(kind, float) and np.isnan(kind)) or str(kind).lower() not in INBOUND
+    return not is_inbound(kind)
 
 
 def baseline_rows(txns: pd.DataFrame) -> pd.Series:

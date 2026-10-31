@@ -19,6 +19,7 @@ REGISTRY: list[Indicator] = [
     *(Indicator(i, ("logins",), "device") for i in ("DV-01", "DV-02", "MT-HOUSE")),
     *(Indicator(i, ("applications",), "application") for i in ("AP-01", "AP-02")),
     Indicator("ID-01", ("applications", "customers"), "application"),
+    Indicator("AP-03", ("applications", "transactions"), "application"),
     *(Indicator(i, ("transactions",), "mitigation") for i in ("MT-PAYEE", "MT-RECUR", "MT-TENURE")),
     Indicator("MT-KNOWN", ("transactions", "logins"), "mitigation"),
 ]
