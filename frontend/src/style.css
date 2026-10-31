@@ -55,3 +55,5 @@
 .ai-event{display:flex;align-items:center;gap:10px;margin:4px 0}.ai-tag{background:#efe7f6;color:#6a3f86;border-radius:10px;padding:1px 8px;font-size:11px}
 .incidents td{white-space:normal;vertical-align:top}.incidents td:nth-child(2){min-width:260px;max-width:420px}.incidents td small{display:block;white-space:normal}
 .level2 .report-buttons{display:flex;gap:8px;margin:10px 0}.level2 .report-buttons button:first-child{flex:1}
+.level2 .check{flex-direction:row;align-items:center;gap:10px;font-size:12px;color:#465e51;margin:6px 0}.level2 .check input{width:auto;accent-color:#345d46}.level2 .check small{margin:0}
+.level2 label.reclassify{flex-direction:row;align-items:center;gap:10px;font-size:12px;margin:8px 0}.level2 .reclassify select{width:auto;min-width:150px}
