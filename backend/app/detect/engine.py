@@ -167,6 +167,7 @@ def run_detection(dataset: Dataset, config: RulesConfig | None = None, run_id: s
         "insufficient_history": int((profiles["baseline_source"] != "customer").sum()) if not profiles.empty else 0,
         "unresolved_link": int(txns["customer_id"].isna().sum()) if not txns.empty else 0,
         "derived_device_link": int((txns["device_link"] == "derived").sum()) if "device_link" in txns else 0,
+        "duplicate_ids_dropped": sum(ds.duplicates.values()),
     }
     run = DetectionRun(
         run_id=rid, rules_version=cfg.version,

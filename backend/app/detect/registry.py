@@ -26,6 +26,7 @@ REGISTRY: list[Indicator] = [
     *(Indicator(i, ("logins",), "device", _DEVICE) for i in ("DV-01", "DV-02", "MT-HOUSE")),
     Indicator("AP-01", ("applications",), "application", ("applications.device_id",)),
     Indicator("AP-02", ("applications",), "application"),
+    Indicator("AP-04", ("applications",), "application", ("applications.disbursement_account",)),
     Indicator("ID-01", ("applications", "customers"), "application", ("applications.phone|applications.email",)),
     Indicator("ID-02", ("applications", "customers"), "application", ("customers.phone|customers.email",)),
     Indicator("AP-03", ("applications", "transactions"), "application",

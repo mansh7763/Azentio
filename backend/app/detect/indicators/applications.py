@@ -1,5 +1,6 @@
 """Loan application indicators, each judged at the application's own time (no later applications):
-AP-01 coordinated applicants (same device + shared contact/payout), AP-02 velocity, ID-01 contact conflict."""
+AP-01 coordinated applicants (same device + shared contact/payout), AP-02 velocity, AP-04 shared payout account,
+ID-01 contact conflict, ID-02 normalised identity reuse."""
 
 import re
 
@@ -53,6 +54,8 @@ def application_signals(ds: Dataset, cfg: RulesConfig) -> list[Signal]:
     min_applicants = p1.get("min_applicants", 3)
     cluster_window = pd.Timedelta(hours=p1.get("window_hours", 72))
     velocity_window = pd.Timedelta(days=p2.get("days", 7))
+    p4 = cfg.params("AP-04")
+    payout_window = pd.Timedelta(days=p4["days"]) if p4 else None
     apps = apps.sort_values("seq").copy()
     for attr in CONTACTS:
         apps[f"_{attr}"] = apps[attr].map(lambda v, a=attr: _norm(a, v)) if attr in apps else None
@@ -80,6 +83,19 @@ def application_signals(ds: Dataset, cfg: RulesConfig) -> list[Signal]:
                 what = ", ".join(s.replace("disbursement_account", "payout account") for s in shared)
                 out.append(_signal(cfg, "AP-01", a, f"{applicants} applicants on device {device} within {hours}h, "
                                                     f"sharing {what}", list(cluster["application_id"])))
+
+        # AP-04: one payout account named by >= min_applicants distinct applicants within `days`, whatever devices
+        # they used: a swarm that spreads across devices to evade AP-01 (issue #6 B3). One household is excluded.
+        payout = a.get("_disbursement_account")
+        if cfg.enabled("AP-04") and isinstance(payout, str) and payout:
+            same = prior[(prior["_disbursement_account"] == payout) & (prior["timestamp"] >= a["timestamp"] - payout_window)]
+            applicants = sorted(same["customer_id"].dropna().unique())
+            family = {(people.get(c, {}).get("surname"), people.get(c, {}).get("address")) for c in applicants}
+            household = len(family) == 1 and None not in next(iter(family))
+            if len(applicants) >= p4["min_applicants"] and not household:
+                out.append(_signal(cfg, "AP-04", a, f"{len(applicants)} applicants ({', '.join(applicants)}) named the "
+                                                    f"same payout account {a['disbursement_account']} within "
+                                                    f"{payout_window.days} days", list(same["application_id"]) + applicants))
 
         # AP-02: velocity from one customer or one device.
         if cfg.enabled("AP-02"):

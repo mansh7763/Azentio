@@ -37,6 +37,7 @@ indicators:
   AP-02: {weight: 0.30, params: {count: 3, days: 7}}         # application velocity
   AP-03: {weight: 0.50, params: {share: 0.7, hours: 48}}     # loan disbursement -> >=70% to new recipients in 48h (P1, F04)
   ID-01: {weight: 0.35}                                      # application contact differs from profile and is reused by others
+  AP-04: {weight: 0.45, params: {min_applicants: 3, days: 7}}  # >=3 applicants name one payout account, any devices (evasion of AP-01)
   ID-02: {weight: 0.30}                                      # profile phone/mailbox shared with another name after normalising (F01)
   # Issue #6: frauds that stay under per-payment rules. Weights < 0.70; each needs corroboration for High.
   TX-06: {weight: 0.40, params: {windows_hours: [24, 168], quantile: 0.95, min_windows: 5, min_ratio: 1.5}}  # rolling total >= 1.5x own p95 (F10)

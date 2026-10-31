@@ -1,7 +1,7 @@
 {
   "note": "Hand-built calibration scenarios, written alongside the rules. They show the rules behave as designed; they are not an accuracy measurement.",
-  "run_id": "RUN-d29df01afe",
-  "rules_version": "c4eb386fe3a5",
+  "run_id": "RUN-03f41d88ba",
+  "rules_version": "37514907f59e",
   "passed": 34,
   "total": 34,
   "by_kind": {

@@ -31,6 +31,7 @@ def is_inbound(kind) -> bool:
 @dataclass
 class Dataset:
     frames: dict[str, pd.DataFrame] = field(default_factory=dict)
+    duplicates: dict[str, int] = field(default_factory=dict)  # repeated IDs dropped by prepare(), per table
 
     def has(self, name: str) -> bool:
         df = self.frames.get(name)
@@ -123,12 +124,19 @@ def prepare(ds: Dataset, cfg: RulesConfig) -> Dataset:
             if col.endswith("_id") or col in ("sender_account", "beneficiary_account", "disbursement_account"):
                 df[col] = df[col].map(lambda v: None if v is None or (isinstance(v, float) and pd.isna(v)) else str(v))
 
+    duplicates: dict[str, int] = {}
     for name in EVENT_TABLES:
         df = frames.get(name)
         if df is None or df.empty:
             continue
         time_col = "timestamp" if "timestamp" in df else "incident_date"
         df = df.sort_values([time_col, ID_COLUMN[name]], kind="mergesort").reset_index(drop=True)
+        # A repeated ID is one event recorded twice: keep the earliest so it is scored once, and count the rest so
+        # coverage shows them (issue #6 B4). Ingestion already skips duplicates; this guards other callers.
+        repeated = df[ID_COLUMN[name]].notna() & df.duplicated(ID_COLUMN[name], keep="first")
+        if repeated.any():
+            duplicates[name] = int(repeated.sum())
+            df = df[~repeated].reset_index(drop=True)
         df["seq"] = range(len(df))
         frames[name] = df
 
@@ -149,4 +157,4 @@ def prepare(ds: Dataset, cfg: RulesConfig) -> Dataset:
             txns["customer_id"] = txns["customer_id"].astype(object).where(txns["customer_id"].map(lambda v: isinstance(v, str)), None)
         frames["transactions"] = _link_devices(txns, frames.get("logins", pd.DataFrame()), cfg.windows.link_minutes)
 
-    return Dataset(frames)
+    return Dataset(frames, duplicates)

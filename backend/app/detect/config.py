@@ -17,7 +17,7 @@ REQUIRED_PARAMS: dict[str, set[str]] = {
     "TX-06": {"windows_hours", "quantile", "min_windows", "min_ratio"}, "TX-07": {"count", "hours", "low", "high", "min_z"},
     "TX-08": {"dormant_days", "observed_days", "follow_days"},
     "HV-01": {"quantile", "min_samples"}, "DV-01": {"min_customers", "days"}, "LG-01": {"failures"},
-    "AP-01": {"min_applicants", "window_hours"}, "AP-02": {"count", "days"}, "AP-03": {"share", "hours"},
+    "AP-01": {"min_applicants", "window_hours"}, "AP-02": {"count", "days"}, "AP-03": {"share", "hours"}, "AP-04": {"min_applicants", "days"},
     "NW-01": {"min_payers", "hours", "established_payers"}, "NW-02": {"max_hops", "hours", "tolerance"},
     "MT-PAYEE": {"min_prior", "tolerance"}, "MT-RECUR": {"min_prior", "cadence_days", "slack_days"},
     "MT-TENURE": {"days"},

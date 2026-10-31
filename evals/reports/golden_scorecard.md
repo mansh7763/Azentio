@@ -2,7 +2,7 @@
 
 > Hand-built calibration scenarios, written alongside the rules. They show the rules behave as designed; they are not an accuracy measurement.
 
-Rules version `c4eb386fe3a5` · run `RUN-d29df01afe` · **34 / 34 scenarios behave as designed**
+Rules version `37514907f59e` · run `RUN-03f41d88ba` · **34 / 34 scenarios behave as designed**
 
 | Group | Passed |
 | --- | --- |
