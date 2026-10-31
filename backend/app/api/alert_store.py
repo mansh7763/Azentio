@@ -1,19 +1,18 @@
 """Persist detection runs. Alerts are immutable snapshots; a case follows one incident across runs."""
 
 import hashlib
-from collections import defaultdict
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timezone
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.detect.engine import DetectionResult
-from app.graph.priority import prioritise
+from app.graph.consolidate import consolidate
+from app.graph.priority import case_priority
 from app.models import AlertRow, CaseEventRow, CaseIncidentRow, CaseRow, DetectionRunRow
 from app.schemas import Alert, Band, CaseStatus, DetectionRun
 
 ACTIONABLE = {Band.medium, Band.high}
-SAME_CUSTOMER_WINDOW = timedelta(hours=72)
 
 
 def now() -> datetime:
@@ -40,45 +39,6 @@ def _account(alert: Alert) -> str | None:
     return rows[0].get("sender_account") if rows else None
 
 
-def consolidate(alerts: list[Alert], groups: list[dict]) -> list[dict]:
-    """One investigation per linked group, or per customer's alerts within 72 hours. Returns alerts with the reason."""
-    parent = {a.alert_id: a.alert_id for a in alerts}
-    reasons: dict[str, list[str]] = defaultdict(list)
-
-    def find(x: str) -> str:
-        while parent[x] != x:
-            parent[x] = parent[parent[x]]
-            x = parent[x]
-        return x
-
-    def join(ids: list[str], reason: str) -> None:
-        for other in ids[1:]:
-            parent[find(other)] = find(ids[0])
-        if len(ids) > 1:
-            reasons[ids[0]].append(reason)
-
-    by_customer: dict[str, list[Alert]] = defaultdict(list)
-    for alert in alerts:
-        if alert.customer_id:
-            by_customer[alert.customer_id].append(alert)
-    for customer, own in by_customer.items():
-        own.sort(key=lambda a: a.event_time)
-        for earlier, later in zip(own, own[1:]):
-            if later.event_time - earlier.event_time <= SAME_CUSTOMER_WINDOW:
-                join([earlier.alert_id, later.alert_id], f"same customer {customer} within 72 hours")
-    for group in groups:
-        join([i for i in group["alert_ids"] if i in parent], f"linked group: {group['reason']}")
-
-    merged: dict[str, list[Alert]] = defaultdict(list)
-    for alert in alerts:
-        merged[find(alert.alert_id)].append(alert)
-    roots: dict[str, list[str]] = defaultdict(list)
-    for first, texts in reasons.items():
-        roots[find(first)] += texts
-    return [{"alerts": members, "reason": "; ".join(dict.fromkeys(roots[root])) or "Single alert: no related activity found"}
-            for root, members in merged.items()]
-
-
 def _open_case(session: Session, case_id: str, reason: str, note: str) -> CaseRow:
     stamp = now()
     case = CaseRow(case_id=case_id, alert_ids=[], category="", score=0, band="", status=CaseStatus.new.value,
@@ -101,16 +61,15 @@ def refresh_case(session: Session, case: CaseRow) -> None:
     if not latest:
         return
     top = max(latest, key=lambda a: a.score)
-    ranked = prioritise(latest)
+    rank = case_priority(latest)
     case.alert_ids = list(dict.fromkeys(a.alert_id for a in snapshots))
     case.category, case.score, case.system_band = top.category.value, top.score, top.band.value
     case.band = case.analyst_band or top.band.value
     case.customer_id = _affected_customer(top)
     case.account_id = next((x for x in map(_account, sorted(latest, key=lambda a: -a.score)) if x), None)
-    case.priority = max(r["priority"] for r in ranked)
-    case.exposure = sum(r["exposure"] for r in ranked)
-    case.needs_review = all(r["needs_review"] for r in ranked)
-    case.priority_factors = [*ranked[0]["factors"], f"{len(latest)} related alert(s) in this case"]
+    case.priority, case.exposure_by_currency = rank["priority"], rank["exposure_by_currency"]
+    case.evidence_strength, case.needs_review = rank["evidence_strength"], rank["needs_review"]
+    case.priority_factors = [*rank["factors"], f"{len(latest)} related alert(s) in this case"]
     case.updated_at = now()
 
 
@@ -118,8 +77,9 @@ def _sync_cases(session: Session, alerts: list[Alert], groups: list[dict]) -> No
     placed = {r.incident_key: r for r in session.scalars(select(CaseIncidentRow))}
     touched = {placed[incident_key(a)].case_id for a in alerts if incident_key(a) in placed}
     actionable = [a for a in alerts if a.band in ACTIONABLE]
+    by_id = {a.alert_id: a for a in actionable}
     for group in consolidate(actionable, groups):
-        keys = sorted({incident_key(a) for a in group["alerts"]})
+        keys = sorted({incident_key(by_id[i]) for i in group["alert_ids"]})
         free = [k for k in keys if not (k in placed and placed[k].pinned)]
         if not free:
             continue

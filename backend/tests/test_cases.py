@@ -92,7 +92,8 @@ def test_filters_combine(run):
 def test_only_actionable_alerts_open_cases(run):
     actionable = [a for a in run["alerts"] if a["band"] in ("Medium", "High")]
     cases = client.get("/api/cases").json()
-    assert cases["total"] == len(actionable) == count(CaseRow)
+    assert cases["total"] == count(CaseRow) < len(actionable)
+    assert {a["alert_id"] for a in actionable} <= {i for c in cases["items"] for i in c["alert_ids"]}
     bands = {c["band"] for c in cases["items"]}
     assert "Low" not in bands
 
@@ -101,7 +102,8 @@ def test_case_has_required_fields_and_affected_entity(run):
     case = ato_case()
     assert case["case_id"].startswith("CASE-") and case["customer_id"] == "C002" and case["account_id"]
     assert case["band"] == "High" and case["status"] == "New"
-    device = next(c for c in client.get("/api/cases").json()["items"] if c["category"] == "shared_device")
+    device_alert = next(a for a in run["alerts"] if a["primary_entity_id"] == "DEV-RING")
+    device = next(c for c in client.get("/api/cases").json()["items"] if device_alert["alert_id"] in c["alert_ids"])
     assert device["customer_id"]
 
 

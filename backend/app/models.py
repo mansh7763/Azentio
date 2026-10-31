@@ -167,7 +167,8 @@ class CaseRow(Base):
     system_band: Mapped[str | None] = mapped_column(String)
     analyst_band: Mapped[str | None] = mapped_column(String)  # survives re-runs; the system band stays recorded
     priority: Mapped[int] = mapped_column(Integer, default=0)
-    exposure: Mapped[float] = mapped_column(Float, default=0)
+    exposure_by_currency: Mapped[dict] = mapped_column(JSON, default=dict)
+    evidence_strength: Mapped[str] = mapped_column(String, default="weak")
     needs_review: Mapped[bool] = mapped_column(Boolean, default=False)
     priority_factors: Mapped[list] = mapped_column(JSON, default=list)
 

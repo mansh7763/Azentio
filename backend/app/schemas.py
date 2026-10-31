@@ -211,7 +211,8 @@ class Case(BaseModel):
     grouping_reason: str = ""
     system_band: Band | None = None  # the detector's classification; `band` shows an analyst's correction
     priority: int = 0
-    exposure: float = 0
+    exposure_by_currency: dict[str, float] = Field(default_factory=dict)
+    evidence_strength: str = "weak"  # how many independent facts support the case; not a probability
     needs_review: bool = False
     priority_factors: list[str] = Field(default_factory=list)
 
