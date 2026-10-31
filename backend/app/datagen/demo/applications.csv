@@ -1,0 +1,10 @@
+application_id,customer_id,product,amount,timestamp,device_id,ip,phone,email,status,disbursement_account
+APP-C010,C010,personal_loan,300000,2026-10-08T00:55:00Z,DEV-RING,10.9.9.9,9000000001,c010@example.com,submitted,A-C010
+APP-C011,C011,personal_loan,300000,2026-10-09T01:55:00Z,DEV-RING,10.9.9.9,9000000001,c011@example.com,submitted,A-C011
+APP-C012,C012,personal_loan,300000,2026-10-10T02:55:00Z,DEV-RING,10.9.9.9,9000000001,c012@example.com,submitted,A-C012
+APP-C013,C013,personal_loan,300000,2026-10-08T03:55:00Z,DEV-RING,10.9.9.9,9000000001,c013@example.com,submitted,A-C013
+APP-C016,C016,personal_loan,200000,2026-10-11T10:00:00Z,DEV-C016,10.50.0.1,9800000016,c016@example.com,submitted,A-C016
+APP-C017,C017,personal_loan,200000,2026-10-11T11:00:00Z,DEV-C017,10.50.0.1,9800000017,c017@example.com,submitted,A-C017
+APP-C018,C018,personal_loan,200000,2026-10-11T12:00:00Z,DEV-C018,10.50.0.1,9800000018,c018@example.com,submitted,A-C018
+APP-C025-0,C025,personal_loan,100000,2026-10-15T11:00:00Z,DEV-C025,10.60.0.1,9800000025,c025@example.com,submitted,A-C025
+APP-C025-1,C025,credit_card,100000,2026-10-25T11:00:00Z,DEV-C025,10.60.0.1,9800000025,c025@example.com,submitted,A-C025

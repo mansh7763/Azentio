@@ -83,6 +83,7 @@ class TransactionRow(Provenance, Base):
     customer_id: Mapped[str | None] = mapped_column(String, index=True)
     device_id: Mapped[str | None] = mapped_column(String)
     ip: Mapped[str | None] = mapped_column(String)
+    application_id: Mapped[str | None] = mapped_column(String)
 
 
 class LoginRow(Provenance, Base):
@@ -176,6 +177,14 @@ class CaseEventRow(Base):
     from_status: Mapped[str | None] = mapped_column(String)
     to_status: Mapped[str] = mapped_column(String)
     note: Mapped[str | None] = mapped_column(String)
+
+
+class RuleOverrideRow(Base):
+    """Rule edits as one document, merged over rules.yaml, so they survive a restart."""
+    __tablename__ = "rule_override"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    payload: Mapped[dict] = mapped_column(JSON)
 
 
 # Keys match app.detect.dataset.TABLES, so stored tables become detection frames directly.

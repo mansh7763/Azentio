@@ -9,11 +9,11 @@ from app.detect.config import load_rules
 from app.detect.dataset import Dataset
 from app.detect.engine import run_detection
 from app.ingest.store import load_frames
+from app.models import RuleOverrideRow
 from app.schemas import DetectionResponse
 
 router = APIRouter(tags=["detection"])
 
-_overrides: dict = {}  # TODO(A): persist in a rule_override table so edits survive restarts
 
 
 class RunRequest(BaseModel):
@@ -26,8 +26,20 @@ class RuleUpdate(BaseModel):
     params: dict | None = None
 
 
+def _overrides() -> dict:
+    with SessionLocal() as session:
+        row = session.get(RuleOverrideRow, 1)
+        return dict(row.payload) if row else {}
+
+
+def _save_overrides(overrides: dict) -> None:
+    with SessionLocal() as session:
+        session.merge(RuleOverrideRow(id=1, payload=overrides))
+        session.commit()
+
+
 def _merged(extra: dict | None) -> dict:
-    out = {**_overrides}
+    out = _overrides()
     for section, items in (extra or {}).items():
         out[section] = {**out.get(section, {}), **items} if isinstance(items, dict) else items
     return out
@@ -50,26 +62,28 @@ def run(body: RunRequest | None = None):
 
 @router.get("/rules")
 def get_rules():
-    cfg = load_rules(_overrides)
+    cfg = load_rules(_overrides())
     return {**cfg.model_dump(), "version": cfg.version}
 
 
 @router.put("/rules/{indicator_id}")
 def update_rule(indicator_id: str, update: RuleUpdate):
-    cfg = load_rules(_overrides)
+    overrides = _overrides()
+    cfg = load_rules(overrides)
     section = "indicators" if indicator_id in cfg.indicators else "mitigations" if indicator_id in cfg.mitigations else None
     if section is None:
         raise HTTPException(404, f"unknown indicator {indicator_id}")
     change = update.model_dump(exclude_none=True)
-    current = _overrides.setdefault(section, {}).setdefault(indicator_id, {})
+    current = overrides.setdefault(section, {}).setdefault(indicator_id, {})
     if "params" in change:
         current["params"] = {**current.get("params", {}), **change.pop("params")}
     current.update(change)
-    load_rules(_overrides)  # validate before accepting
+    load_rules(overrides)  # validate before accepting
+    _save_overrides(overrides)
     return get_rules()
 
 
 @router.post("/rules/reset")
 def reset_rules():
-    _overrides.clear()
+    _save_overrides({})
     return get_rules()

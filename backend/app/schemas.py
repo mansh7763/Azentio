@@ -83,6 +83,7 @@ class Transaction(BaseModel):
     customer_id: str | None = None
     device_id: str | None = None
     ip: str | None = None
+    application_id: str | None = None  # explicit loan link, when a transaction is a disbursement
 
 
 class LoginEvent(BaseModel):

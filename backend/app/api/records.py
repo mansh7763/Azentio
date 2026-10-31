@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -19,7 +19,8 @@ from app.schemas import IngestReport
 
 router = APIRouter(tags=["records"])
 
-DEMO_DIR = Path(__file__).resolve().parents[2] / "tests" / "golden"  # replaced by datagen fixtures in step 11
+DEMO_DIR = Path(__file__).resolve().parents[1] / "datagen" / "demo"
+MAX_PAGE = 500
 
 
 def _columns(sheet: Sheet) -> list[str]:
@@ -61,8 +62,7 @@ async def ingest(file: UploadFile = File(...), entity_type: str | None = Form(No
 def load_demo(session: Session = Depends(get_session)):
     reports = []
     for entity in TABLES:  # parents first, so demo links resolve
-        path = DEMO_DIR / f"{entity}.csv"
-        if path.exists():
+        for path in DEMO_DIR.glob(f"{entity}.*"):
             sheet = parse_file(path.name, path.read_bytes())[0]
             reports.append(ingest_sheet(session, path.name, sheet, entity))
     return {"loaded": sum(r.accepted for r in reports), "reports": reports}
@@ -84,7 +84,8 @@ def rejected_rows(batch_id: str, session: Session = Depends(get_session)):
 
 
 @router.get("/records/{entity}")
-def list_records(entity: str, limit: int = 50, offset: int = 0, session: Session = Depends(get_session)):
+def list_records(entity: str, limit: int = Query(50, ge=1, le=MAX_PAGE), offset: int = Query(0, ge=0),
+                 session: Session = Depends(get_session)):
     if entity not in ENTITY_MODELS:
         raise HTTPException(404, f"unknown entity '{entity}'; use one of {', '.join(ENTITY_MODELS)}")
     model = ENTITY_MODELS[entity]
