@@ -1,0 +1,303 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>FinShield Submission Brief</title><style>
+@page { size: 1280px 720px; margin: 0 }
+* { box-sizing: border-box }
+html, body { margin: 0; padding: 0; background: #fff }
+body { font-family: "Segoe UI", Arial, sans-serif; color: #14302a; -webkit-print-color-adjust: exact; print-color-adjust: exact }
+.s { width: 1280px; height: 720px; position: relative; overflow: hidden; padding: 34px 56px 44px; background: #fbfaf6; break-after: page; page-break-after: always }
+.s:last-child { break-after: auto; page-break-after: auto }
+.eyebrow { font-size: 12px; letter-spacing: .09em; color: #5b6b66; font-weight: 600 }
+.eyebrow.light { color: #b8d3c9 }
+h1 { font-size: 31px; line-height: 1.15; margin: 5px 0 14px; color: #14302a; font-weight: 700; max-width: 1060px }
+h0 { display: block; font-size: 92px; font-weight: 800; letter-spacing: -.02em; margin: 14px 0 6px }
+h3 { font-size: 16px; margin: 0 0 8px; color: #1f5e50 }
+h4 { font-size: 15px; margin: 4px 0 4px }
+p { margin: 0 }
+ul, ol { margin: 0; padding-left: 20px; font-size: 15.2px; line-height: 1.45 }
+li { margin: 0 0 8px }
+.tag { position: absolute; top: 30px; right: 56px; background: #f6ecd7; color: #b07a1f; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 700 }
+.foot { position: absolute; left: 56px; right: 56px; bottom: 16px; display: flex; justify-content: space-between; font-size: 10.5px; color: #8a9893 }
+.src { position: absolute; left: 56px; right: 56px; bottom: 36px; font-size: 10.2px; color: #7c8b86 }
+.cover { background: linear-gradient(135deg, #14302a 0%, #1f5e50 100%); color: #fff; padding: 0 }
+.cover-inner { padding: 64px 72px; height: 100% }
+.cover .lead { font-size: 24px; line-height: 1.38; max-width: 900px; color: #e9f3ef }
+.kpis { display: flex; gap: 18px; margin-top: 46px }
+.kpis div { flex: 1; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.22); border-radius: 12px; padding: 18px 18px 16px }
+.kpis b { display: block; font-size: 38px; line-height: 1.1; color: #fff; margin-bottom: 8px }
+.kpis span { font-size: 13.2px; line-height: 1.35; color: #cfe3db }
+.cover-foot { position: absolute; left: 72px; bottom: 34px; font-size: 13px; color: #b8d3c9 }
+.stance { display: flex; gap: 14px; margin: 4px 0 20px }
+.st { flex: 1; border-radius: 12px; padding: 18px 18px 16px; border: 1.5px solid #d9e1dd; background: #fff; border-top: 5px solid #1f5e50 }
+.st.b { border-top-color: #b07a1f } .st.c { border-top-color: #5f8f82 } .st.d { border-top-color: #14302a }
+.st h3 { font-size: 21px; color: #14302a; margin-bottom: 6px }
+.st p { font-size: 15px; line-height: 1.45; color: #3b4d47 }
+.cols2 { display: flex; gap: 36px } .cols2 > div { flex: 1 }
+.cols2.two > div { flex: 1 }
+.cols3 { display: flex; gap: 24px; align-items: flex-start }
+.svgwrap { margin-top: 2px }
+.lead2 { font-size: 16.5px; color: #3b4d47; margin: -2px 0 12px; max-width: 1050px; line-height: 1.4 }
+table { border-collapse: collapse; width: 100%; font-size: 14px }
+th, td { border-bottom: 1px solid #d9e1dd; padding: 8px 10px; text-align: left; vertical-align: top }
+th { background: #e6f0ec; color: #14302a; font-size: 13.4px }
+.matrix td { padding: 10px 12px } .matrix td:first-child { font-weight: 600 }
+.matrix td.y { background: #e3f1ea; color: #1f5e50; font-weight: 700 }
+.matrix td.n { color: #9aa7a2 }
+.matrix td.s2 { background: #f6ecd7; color: #6b4a10 }
+.callout { margin-top: 14px; background: #e6f0ec; border-left: 5px solid #1f5e50; padding: 13px 18px; font-size: 14.6px; line-height: 1.4; border-radius: 6px }
+.chain { display: flex; align-items: center; gap: 8px; margin-top: 22px }
+.chain span { flex: 1; text-align: center; background: #1f5e50; color: #fff; border-radius: 8px; padding: 12px 6px; font-size: 14px; font-weight: 600 }
+.chain i { color: #1f5e50; font-style: normal; font-size: 22px; font-weight: 700 }
+.contract { display: flex; align-items: stretch; gap: 8px; margin-top: 18px }
+.contract div { flex: 1; background: #fff; border: 1.5px solid #d9e1dd; border-radius: 9px; padding: 10px 11px; font-size: 13px; line-height: 1.38 }
+.contract b { display: block; color: #1f5e50; font-size: 13.5px; margin-bottom: 3px }
+.contract i { align-self: center; color: #1f5e50; font-style: normal; font-size: 20px; font-weight: 700 }
+.callout.amber { background: #f6ecd7; border-left-color: #b07a1f }
+.shot { flex: 0 0 322px; background: #fff; border: 1px solid #d9e1dd; border-radius: 10px; padding: 8px }
+.shot img { width: 100%; height: auto; border-radius: 6px; display: block }
+.cap { font-size: 13px; line-height: 1.4; color: #3b4d47; padding: 8px 4px 2px }
+.rules { flex: 1 } .rules ol li { font-size: 15px; margin-bottom: 11px }
+.flow { display: flex; align-items: stretch; gap: 6px; margin-bottom: 14px }
+.fl { flex: 1; background: #fff; border: 1.5px solid #d9e1dd; border-radius: 10px; padding: 14px 13px 12px; position: relative }
+.fl p { font-size: 13px; line-height: 1.4; color: #3b4d47 }
+.num { width: 22px; height: 22px; border-radius: 50%; background: #1f5e50; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; position: absolute; top: -9px; left: 10px }
+.ar { align-self: center; color: #1f5e50; font-size: 22px; font-weight: 700 }
+.tight { gap: 20px; margin-top: 8px }
+.shot2 { background: #fff; border: 1px solid #d9e1dd; border-radius: 10px; padding: 7px }
+.shot2 img { width: 100%; height: 262px; object-fit: cover; object-position: top; border-radius: 6px; display: block }
+.cols-ml { display: flex; gap: 34px } .cols-ml > div:first-child { flex: 0 0 540px } .cols-ml > div:last-child { flex: 1 }
+.cols-ml ul li { font-size: 12.6px; line-height: 1.36; margin-bottom: 4px }
+.mini { font-size: 12.5px; margin-top: 8px } .mini th, .mini td { padding: 5px 9px }
+.chart { background: #fff; border: 1px solid #d9e1dd; border-radius: 10px; padding: 8px 8px 2px }
+.chart svg { display: block; width: 100%; height: auto }
+.note { font-size: 12px; color: #5b6b66; line-height: 1.4; margin-top: 8px }
+.agents { display: flex; gap: 16px }
+.ag { flex: 1; background: #fff; border: 1.5px solid #d9e1dd; border-radius: 12px; padding: 14px 16px; border-top: 5px solid #1f5e50 }
+.ag:nth-child(2) { border-top-color: #b07a1f } .ag:nth-child(3) { border-top-color: #5f8f82 }
+.ah { font-size: 11.5px; color: #5b6b66; margin-bottom: 3px }
+.ag h3 { font-size: 21px; color: #14302a; margin-bottom: 6px }
+.what { font-size: 14.6px; line-height: 1.42; margin-bottom: 10px; color: #2f423c }
+.ag ul li { font-size: 14px; line-height: 1.4; margin-bottom: 6px }
+.guards { margin-top: 14px; display: flex; gap: 10px; align-items: center; font-size: 13px }
+.guards span { background: #e6f0ec; color: #1f5e50; font-weight: 600; border-radius: 20px; padding: 5px 13px }
+.box { background: #fff; border: 1.5px solid #d9e1dd; border-radius: 12px; padding: 16px 18px }
+.box.built { border-top: 5px solid #1f5e50 } .box.path { border-top: 5px solid #b07a1f; background: #fffdf8 }
+.box ul li { font-size: 14.6px; line-height: 1.42; margin-bottom: 9px }
+.risk td { font-size: 14.2px; padding: 9px 12px } .risk td:first-child { font-weight: 600; width: 27% }
+.code { font-family: Consolas, "Courier New", monospace; font-size: 11.8px !important; color: #1f5e50 }
+.cols-eval { display: flex; gap: 34px } .cols-eval > div:first-child { flex: 0 0 620px } .cols-eval > div:last-child { flex: 1 }
+.kp { display: flex; gap: 10px; margin-bottom: 8px }
+.kp div { flex: 1; background: #fff; border: 1.5px solid #d9e1dd; border-radius: 10px; padding: 8px 10px }
+.kp b { display: block; font-size: 27px; color: #1f5e50 } .kp span { font-size: 11.5px; line-height: 1.3; color: #5b6b66 }
+.chart.sm svg { height: 330px }
+pre { background: #14302a; color: #d9eee5; border-radius: 8px; padding: 11px 13px; font-size: 11.6px; line-height: 1.45; font-family: Consolas, "Courier New", monospace; white-space: pre-wrap; margin: 0 0 12px }
+.ev td { padding: 5.5px 9px }
+</style></head><body><section class="s cover"><div class="cover-inner">
+<div class="eyebrow light">AZENTIO HACKATHON · DIGITAL FRAUD INVESTIGATION SYSTEM</div>
+<h0>FinShield</h0>
+<p class="lead">Fraud investigation you can defend: deterministic rules decide, a learned model advises, three AI agents explain and suggest, and the analyst owns every decision.</p>
+<div class="kpis">
+<div><b>93%</b><span>of 56 planted fraud incidents caught at Medium or High on held-out data</span></div>
+<div><b>0%</b><span>of 48 legitimate lookalikes raised to High</span></div>
+<div><b>0.78 → 0.95</b><span>ranking quality after learning rule weights (3 unseen datasets)</span></div>
+<div><b>399</b><span>automated tests passing on the submitted code</span></div>
+</div>
+<div class="cover-foot">Level 1 · detect, score, explain, case queue &nbsp;|&nbsp; Level 2 · correlate, network, consolidate, investigate, audit &nbsp;|&nbsp; All data is synthetic</div>
+</div></section><section class="s "><div class="eyebrow">EXECUTIVE SUMMARY</div><h1>A system an auditor can read, not a model they have to trust</h1>
+<div class="stance">
+<div class="st a"><h3>Rules decide</h3><p>23 active risk indicators and 6 mitigations, weighted in one versioned file, produce every score and band. Same data and same rules always give the same alerts.</p></div>
+<div class="st b"><h3>ML advises</h3><p>A sign-constrained model learned from labelled scenarios re-weighs the rule evidence. It is shown beside the score and never sets a band or a case.</p></div>
+<div class="st c"><h3>Agents explain</h3><p>Pattern Scout, Ask FinShield and Reviewer memory suggest and explain. Every ID they cite is checked against the data. They work with the LLM off.</p></div>
+<div class="st d"><h3>Humans decide</h3><p>Eight analyst actions, each with a reviewer and a reason. Holds are recommendations. Alerts are immutable; every correction is appended.</p></div>
+</div>
+<div class="cols2">
+<div><h3>What it covers</h3>
+<ul><li><b>Level 1.</b> Ingest CSV/Excel/JSON with validation; detect 13 fraud scenarios, including the four required; score 0–100 with named contributions; dashboard, filters, case queue.</li>
+<li><b>Level 2.</b> Cross-system correlation (loan → payout → mule → insurance claim), relationship network, consolidated investigations with split, analyst workspace, audit trail, report, prioritisation.</li></ul></div>
+<div><h3>Why it reads as production-minded</h3>
+<ul><li>One evidence chain from file row to case report; every number traces to record IDs.</li>
+<li>Failure modes designed in: LLM outage, hallucinated IDs, double counting, rule drift, hub false links.</li>
+<li>Honest evaluation on seeds we never tuned on, including what we miss.</li></ul></div>
+</div>
+<div class="chain"><span>Ingest</span><i>›</i><span>Link</span><i>›</i><span>Detect</span><i>›</i><span>Score + explain</span><i>›</i><span>Correlate</span><i>›</i><span>Investigate</span><i>›</i><span>Decide</span><i>›</i><span>Audit + report</span></div>
+<div class="src">Source: one evidence chain: every step keeps the record IDs behind it</div>
+<div class="foot"><span>FinShield · Digital Fraud Investigation System · Submission brief</span><span>2</span></div></section><section class="s "><div class="eyebrow">SYSTEM ARCHITECTURE</div><span class="tag">Architecture</span><h1>One deterministic path, with advisory layers kept outside it</h1>
+<div class="svgwrap"><svg viewBox="0 0 1168 540" width="1168" height="540" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1f5e50"/></marker></defs><rect x="0" y="0" width="860" height="540" rx="12" fill="#e6f0ec" opacity=".55"/><text x="14" y="20" font-size="11.5" fill="#1f5e50" text-anchor="start" font-weight="700">DETERMINISTIC DECISION PATH  (the only place a score, band or case is created)</text><rect x="876" y="0" width="292" height="540" rx="12" fill="#f6ecd7" opacity=".7"/><text x="890" y="20" font-size="11.5" fill="#b07a1f" text-anchor="start" font-weight="700">ADVISORY LAYER  (no write path to scores)</text><rect x="14" y="34" width="150" height="92" rx="8" fill="#fff" stroke="#1f5e50" stroke-width="1.4"/><text x="26" y="56" font-size="15" font-weight="700" fill="#14302a">Source files</text><text x="26" y="76" font-size="12.2" fill="#5b6b66">CSV · Excel · JSON</text><text x="26" y="92" font-size="12.2" fill="#5b6b66">banking · lending ·</text><text x="26" y="108" font-size="12.2" fill="#5b6b66">insurance</text><rect x="196" y="34" width="214" height="92" rx="8" fill="#fff" stroke="#1f5e50" stroke-width="1.4"/><text x="208" y="56" font-size="15" font-weight="700" fill="#14302a">1 · Ingest</text><text x="208" y="76" font-size="12.2" fill="#5b6b66">parsers + header mapping</text><text x="208" y="92" font-size="12.2" fill="#5b6b66">mandatory-field validation</text><text x="208" y="108" font-size="12.2" fill="#5b6b66">provenance · rejected rows kept</text><rect x="442" y="34" width="404" height="92" rx="8" fill="#fff" stroke="#1f5e50" stroke-width="1.4"/><text x="454" y="56" font-size="15" font-weight="700" fill="#14302a">2 · Canonical store  (SQLAlchemy · DATABASE_URL)</text><text x="454" y="76" font-size="12.2" fill="#5b6b66">customers · accounts · transactions · logins · applications · claims</text><text x="454" y="92" font-size="12.2" fill="#5b6b66">detection_run · alert (immutable) · fraud_case · case_incident</text><text x="454" y="108" font-size="12.2" fill="#5b6b66">case_event (append-only audit) · agent_suggestion</text><line x1="164" y1="80" x2="194" y2="80" stroke="#1f5e50" stroke-width="1.8" marker-end="url(#ah)"/><line x1="410" y1="80" x2="440" y2="80" stroke="#1f5e50" stroke-width="1.8" marker-end="url(#ah)"/><rect x="14" y="160" width="196" height="118" rx="8" fill="#fff" stroke="#1f5e50" stroke-width="1.4"/><text x="26" y="182" font-size="15" font-weight="700" fill="#14302a">3 · Features</text><text x="26" y="202" font-size="12.2" fill="#5b6b66">point-in-time customer</text><text x="26" y="218" font-size="12.2" fill="#5b6b66">profiles: norms, payees,</text><text x="26" y="234" font-size="12.2" fill="#5b6b66">devices, tenure, recurrence</text><text x="26" y="250" font-size="12.2" fill="#5b6b66">(no look-ahead)</text><rect x="236" y="160" width="250" height="118" rx="8" fill="#fff" stroke="#1f5e50" stroke-width="1.4"/><text x="248" y="182" font-size="15" font-weight="700" fill="#14302a">4 · Detection  (rules.yaml)</text><text x="248" y="202" font-size="12.2" fill="#5b6b66">23 risk indicators + 6 mitigations</text><text x="248" y="218" font-size="12.2" fill="#5b6b66">4 attack-chain floors · windows</text><text x="248" y="234" font-size="12.2" fill="#5b6b66">config hashed to a rules version</text><text x="248" y="250" font-size="12.2" fill="#5b6b66">missing data is flagged, not safe</text><rect x="512" y="160" width="334" height="118" rx="8" fill="#fff" stroke="#1f5e50" stroke-width="1.4"/><text x="524" y="182" font-size="15" font-weight="700" fill="#14302a">5 · Scoring  (explainable)</text><text x="524" y="202" font-size="12.2" fill="#5b6b66">noisy-OR of counted signals;</text><text x="524" y="218" font-size="12.2" fill="#5b6b66">strongest signal per fact family</text><text x="524" y="234" font-size="12.2" fill="#5b6b66">mitigations damp · chain floors lift</text><text x="524" y="250" font-size="12.2" fill="#5b6b66">contributions add up to the score</text><line x1="210" y1="219" x2="234" y2="219" stroke="#1f5e50" stroke-width="1.8" marker-end="url(#ah)"/><line x1="486" y1="219" x2="510" y2="219" stroke="#1f5e50" stroke-width="1.8" marker-end="url(#ah)"/><line x1="644" y1="126" x2="644" y2="158" stroke="#5f8f82" stroke-width="1.8" marker-end="url(#ah)"/><text x="652" y="146" font-size="10.5" fill="#5b6b66" text-anchor="start" font-weight="400">reads / writes</text><rect x="14" y="312" width="196" height="120" rx="8" fill="#fff" stroke="#1f5e50" stroke-width="1.4"/><text x="26" y="334" font-size="15" font-weight="700" fill="#14302a">6 · Graph</text><text x="26" y="354" font-size="12.2" fill="#5b6b66">shared device · phone ·</text><text x="26" y="370" font-size="12.2" fill="#5b6b66">email · payout account</text><text x="26" y="386" font-size="12.2" fill="#5b6b66">hub cap · every edge keeps</text><text x="26" y="402" font-size="12.2" fill="#5b6b66">its record IDs</text><rect x="236" y="312" width="250" height="120" rx="8" fill="#fff" stroke="#1f5e50" stroke-width="1.4"/><text x="248" y="334" font-size="15" font-weight="700" fill="#14302a">7 · Consolidate + prioritise</text><text x="248" y="354" font-size="12.2" fill="#5b6b66">linked group or same</text><text x="248" y="370" font-size="12.2" fill="#5b6b66">customer within 72 h</text><text x="248" y="386" font-size="12.2" fill="#5b6b66">risk · exposure/currency ·</text><text x="248" y="402" font-size="12.2" fill="#5b6b66">related events · evidence</text><rect x="512" y="312" width="334" height="120" rx="8" fill="#fff" stroke="#1f5e50" stroke-width="1.4"/><text x="524" y="334" font-size="15" font-weight="700" fill="#14302a">8 · Case workflow</text><text x="524" y="354" font-size="12.2" fill="#5b6b66">8 analyst actions (holds = recommendations)</text><text x="524" y="370" font-size="12.2" fill="#5b6b66">split with pinned incidents · reclassify</text><text x="524" y="386" font-size="12.2" fill="#5b6b66">append-only audit · JSON/Markdown report</text><text x="524" y="402" font-size="12.2" fill="#5b6b66">originals never change</text><line x1="210" y1="372" x2="234" y2="372" stroke="#1f5e50" stroke-width="1.8" marker-end="url(#ah)"/><line x1="486" y1="372" x2="510" y2="372" stroke="#1f5e50" stroke-width="1.8" marker-end="url(#ah)"/><line x1="512" y1="278" x2="380" y2="310" stroke="#5f8f82" stroke-width="1.8" marker-end="url(#ah)"/><text x="404" y="296" font-size="10.5" fill="#5b6b66" text-anchor="start" font-weight="400">immutable alerts</text><rect x="14" y="466" width="360" height="62" rx="8" fill="#fff" stroke="#1f5e50" stroke-width="1.4"/><text x="26" y="488" font-size="15" font-weight="700" fill="#14302a">9 · FastAPI  /api</text><text x="26" y="508" font-size="12" fill="#5b6b66">alerts · cases · graph · priority · detect · assistant</text><rect x="400" y="466" width="446" height="62" rx="8" fill="#fff" stroke="#1f5e50" stroke-width="1.4"/><text x="412" y="488" font-size="15" font-weight="700" fill="#14302a">10 · React investigation workspace</text><text x="412" y="508" font-size="12" fill="#5b6b66">Overview · Data sources · Cases · Network · Ask FinShield</text><line x1="374" y1="497" x2="398" y2="497" stroke="#1f5e50" stroke-width="1.8" marker-end="url(#ah)"/><line x1="630" y1="432" x2="630" y2="464" stroke="#5f8f82" stroke-width="1.8" marker-end="url(#ah)"/><rect x="892" y="34" width="262" height="138" rx="8" fill="#fff" stroke="#b07a1f" stroke-width="1.4"/><text x="904" y="56" font-size="15" font-weight="700" fill="#14302a">ML shadow score</text><text x="904" y="76" font-size="12.2" fill="#5b6b66">logistic model re-weighs the</text><text x="904" y="92" font-size="12.2" fill="#5b6b66">same rule evidence; shown next</text><text x="904" y="108" font-size="12.2" fill="#5b6b66">to the rule score, labelled</text><text x="904" y="124" font-size="12.2" fill="#5b6b66">comparison-only. Trained offline.</text><rect x="892" y="190" width="262" height="210" rx="8" fill="#fff" stroke="#b07a1f" stroke-width="1.4"/><text x="904" y="212" font-size="15" font-weight="700" fill="#14302a">Three agents  (LLM boundary)</text><text x="904" y="232" font-size="12.2" fill="#5b6b66">Pattern Scout: finds what no rule</text><text x="904" y="248" font-size="12.2" fill="#5b6b66">alerted on, proposes a rule</text><text x="904" y="264" font-size="12.2" fill="#5b6b66">Ask FinShield: answers about the</text><text x="904" y="280" font-size="12.2" fill="#5b6b66">current screen, citations checked</text><text x="904" y="296" font-size="12.2" fill="#5b6b66">Reviewer memory: earlier decisions</text><text x="904" y="312" font-size="12.2" fill="#5b6b66">and notes on shared entities</text><text x="904" y="328" font-size="12.2" fill="#5b6b66">LLM off → templates + evidence</text><rect x="892" y="418" width="262" height="110" rx="8" fill="#fff" stroke="#b07a1f" stroke-width="1.4" stroke-dasharray="5 4"/><text x="904" y="440" font-size="15" font-weight="700" fill="#14302a">Offline evaluation</text><text x="904" y="460" font-size="12.2" fill="#5b6b66">seeded generator · golden 34</text><text x="904" y="476" font-size="12.2" fill="#5b6b66">held-out seeds · ML training</text><text x="904" y="492" font-size="12.2" fill="#5b6b66">reports in evals/reports</text><line x1="846" y1="250" x2="890" y2="110" stroke="#b07a1f" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#ah)"/><line x1="846" y1="372" x2="890" y2="292" stroke="#b07a1f" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#ah)"/><text x="872" y="412" font-size="10.5" fill="#b07a1f" text-anchor="end" font-weight="400">read-only</text></svg></div>
+<div class="src">Source: backend/app (ingest, features, detect, score, graph, api, ai), evals/</div>
+<div class="foot"><span>FinShield · Digital Fraud Investigation System · Submission brief</span><span>3</span></div></section><section class="s "><div class="eyebrow">TRUST MODEL</div><span class="tag">Explainable first</span><h1>Who may decide what</h1>
+<p class="lead2">The central design rule: every component has a clearly bounded power. Anything probabilistic or generative sits on the advisory side of the line.</p>
+<table class="matrix"><thead><tr><th>Capability</th><th>Rules engine</th><th>ML shadow</th><th>AI agents</th><th>Analyst</th></tr></thead><tbody>
+<tr><td>Set the risk score and band</td><td class="y">Decides</td><td class="n">Shown beside it</td><td class="n">No</td><td class="s2">Reclassify only; original band kept</td></tr>
+<tr><td>Open a case from an alert</td><td class="y">Decides (Medium/High)</td><td class="n">No</td><td class="n">No</td><td class="n">No</td></tr>
+<tr><td>Group alerts into one investigation</td><td class="y">Proposes, with the reason</td><td class="n">No</td><td class="n">No</td><td class="s2">Can split; split is pinned</td></tr>
+<tr><td>Change case status, record a decision</td><td class="n">No</td><td class="n">No</td><td class="n">No</td><td class="y">Decides, with reviewer + note</td></tr>
+<tr><td>Touch an account or payment</td><td class="n">No</td><td class="n">No</td><td class="n">No</td><td class="s2">Recommends only; nothing executed</td></tr>
+<tr><td>Write to the audit trail</td><td class="s2">System events</td><td class="n">No</td><td class="s2">AI assessment, only when saved by the analyst, labelled</td><td class="y">Decisions, actions, corrections</td></tr>
+<tr><td>Propose a new rule</td><td class="n">No</td><td class="n">No</td><td class="s2">Pattern Scout suggests</td><td class="s2">Approve / dismiss recorded; rules unchanged</td></tr>
+</tbody></table>
+<div class="callout"><b>Proof, not promise.</b> A test runs the full golden set with and without the ML model installed and asserts that rule scores, bands and categories are identical. The golden scorecard (34/34) is byte-identical after the ML step.</div>
+<div class="src">Source: backend/app/api/cases.py (ACTIONS), backend/tests/test_ml_shadow.py, evals/reports/golden_scorecard.md</div>
+<div class="foot"><span>FinShield · Digital Fraud Investigation System · Submission brief</span><span>4</span></div></section><section class="s "><div class="eyebrow">DETERMINISTIC CORE</div><span class="tag">Level 1</span><h1>Same engine, opposite verdicts, and it shows why</h1>
+<div class="cols3">
+<div class="shot"><img src="assets/ato.jpg"/><div class="cap"><b>Account takeover · High 85</b><br/>6 failed logins, success from a never-seen device, a large transfer. Corroborated, so mitigations are suspended.</div></div>
+<div class="shot"><img src="assets/household.jpg"/><div class="cap"><b>Family tablet · Low 18</b><br/>Three customers share one device (+45) but share surname and address, so the household mitigation applies (−27).</div></div>
+<div class="rules">
+<h3>How a score is built</h3>
+<ol><li><b>Signals.</b> Each indicator fires with a weight and a strength, and lists its record IDs.</li>
+<li><b>No double counting.</b> Rules that measure the same fact form a family; only the strongest counts.</li>
+<li><b>Noisy-OR.</b> risk = 1 − ∏(1 − w·s). No weight reaches 0.70, so no single indicator is High alone.</li>
+<li><b>Mitigations.</b> Known payee, tenure, recurrence, household, own-account lower risk, and switch off when a login attack is active.</li>
+<li><b>Chain floors.</b> Ordered attack patterns lift the score: takeover 85 / 70 / 55 (capped below High), loan-to-mule 80.</li>
+<li><b>Bands.</b> Medium ≥ 40, High ≥ 70. Contributions add up exactly to the score.</li></ol>
+</div></div>
+<div class="src">Source: backend/app/score/scoring.py, backend/app/detect/rules.yaml, evals/reports/golden_scorecard.md</div>
+<div class="foot"><span>FinShield · Digital Fraud Investigation System · Submission brief</span><span>5</span></div></section><section class="s "><div class="eyebrow">ONE CASE, END TO END</div><span class="tag">Level 2</span><h1>From four loose records to one defensible investigation</h1>
+<div class="flow">
+<div class="fl"><div class="num">1</div><h4>Records</h4><p>3 loan applications on device <b>DEV-RING</b> with one phone; payout to <b>A-C011</b>; outflows to MULE-0/1/2; claims <b>CLM-1</b>, <b>CLM-2</b> paid into A-C011.</p></div>
+<div class="ar">›</div>
+<div class="fl"><div class="num">2</div><h4>Indicators</h4><p>Shared-device applications, phone reuse, loan-to-mule cash-out. Four alerts, each with named contributions and record IDs.</p></div>
+<div class="ar">›</div>
+<div class="fl"><div class="num">3</div><h4>Linked group</h4><p>Customers joined only by device, phone, email or payout account. Reason stored: <i>device DEV-RING and phone 9000000001 shared by C010–C013</i>.</p></div>
+<div class="ar">›</div>
+<div class="fl"><div class="num">4</div><h4>One case</h4><p><b>CASE-7085d89848</b>, High, priority 87, evidence strong. Why grouped is shown; any alert can be split out.</p></div>
+<div class="ar">›</div>
+<div class="fl"><div class="num">5</div><h4>Decision + record</h4><p>Reviewer + note for each action. Hold is a recommendation. AI assessments are labelled and rejectable. Report downloads as JSON or Markdown.</p></div>
+</div>
+<div class="cols2 tight">
+<div class="shot2"><img src="assets/network.jpg"/><div class="cap">Network around C011: every edge is a shared identifier, and hovering shows the record IDs that prove it.</div></div>
+<div class="shot2"><img src="assets/workspace2.jpg"/><div class="cap">Case workspace: why these alerts are grouped, split, eight analyst actions with a reviewer and note, report download.</div></div>
+</div>
+<div class="src">Source: live demo dataset, case CASE-7085d89848; backend/app/graph, backend/app/api/cases.py</div>
+<div class="foot"><span>FinShield · Digital Fraud Investigation System · Submission brief</span><span>6</span></div></section><section class="s "><div class="eyebrow">LEARNED WEIGHTS</div><span class="tag">Trained models</span><h1>Trained models calibrate the weights; they do not replace the rules</h1>
+<div class="cols-ml">
+<div>
+<h3>What was trained, and on what</h3>
+<ul>
+<li><b>Features.</b> Per scoring unit: each rule's evidence (weight × strength) plus whether an attack-chain floor applied. <b>Primary parameters</b> are the risk indicators; <b>derived parameters</b> are the mitigations and the chain floor.</li>
+<li><b>Labels.</b> Planted incidents in a seeded synthetic generator, with labelled lookalikes.</li>
+<li><b>Model A (selected).</b> Logistic regression with sign bounds (risk ≥ 0, mitigation ≤ 0) and a pull toward the hand weights. Output: a multiplier per rule.</li>
+<li><b>Model B (rejected).</b> Gradient-boosted trees with monotonic constraints, explained by permutation importance. Higher recall but lookalike false positives rose to 25% at Medium+ (8% at High).</li>
+<li><b>Protocol.</b> Train on pooled seeds 2, 6, 7 (3,097 units, 512 fraud); test on unseen seeds 4, 5, 8 at matched alert volume; 50 bootstrap resamples by incident for 90% intervals.</li>
+</ul>
+<table class="mini"><thead><tr><th>Unseen datasets, mean of 3</th><th>Hand</th><th>Learned</th></tr></thead><tbody>
+<tr><td>Ranking quality (average precision)</td><td>0.78</td><td><b>0.95</b></td></tr>
+<tr><td>Precision of Medium+ alerts</td><td>76%</td><td><b>88%</b></td></tr>
+<tr><td>Background false alarms</td><td>35</td><td><b>17</b></td></tr>
+<tr><td>Lookalikes wrongly at Medium+</td><td>10%</td><td><b>8%</b></td></tr>
+<tr><td>Fraud caught at Medium+ (unchanged)</td><td>89%</td><td>89%</td></tr>
+</tbody></table>
+</div>
+<div>
+<h3>What the model says about our hand weights</h3>
+<div class="chart"><svg viewBox="0 0 700 372" width="700" height="372" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif"><line x1="248.46153846153845" y1="26" x2="248.46153846153845" y2="338" stroke="#d9e1dd" stroke-width="1" stroke-dasharray="3 4"/><text x="248.46153846153845" y="356" font-size="11.5" fill="#5b6b66" text-anchor="middle" font-weight="400">0.5×</text><line x1="332.11538461538464" y1="26" x2="332.11538461538464" y2="338" stroke="#d9e1dd" stroke-width="1" stroke-dasharray="3 4"/><text x="332.11538461538464" y="356" font-size="11.5" fill="#5b6b66" text-anchor="middle" font-weight="400">0.75×</text><line x1="415.7692307692308" y1="26" x2="415.7692307692308" y2="338" stroke="#14302a" stroke-width="1.6" /><text x="415.7692307692308" y="356" font-size="11.5" fill="#5b6b66" text-anchor="middle" font-weight="400">1×</text><line x1="499.42307692307696" y1="26" x2="499.42307692307696" y2="338" stroke="#d9e1dd" stroke-width="1" stroke-dasharray="3 4"/><text x="499.42307692307696" y="356" font-size="11.5" fill="#5b6b66" text-anchor="middle" font-weight="400">1.25×</text><line x1="583.0769230769231" y1="26" x2="583.0769230769231" y2="338" stroke="#d9e1dd" stroke-width="1" stroke-dasharray="3 4"/><text x="583.0769230769231" y="356" font-size="11.5" fill="#5b6b66" text-anchor="middle" font-weight="400">1.5×</text><text x="415.7692307692308" y="16" font-size="11.5" fill="#14302a" text-anchor="middle" font-weight="600">1.0× = hand weight confirmed</text><text x="8" y="46.0" font-size="13" fill="#14302a" text-anchor="start" font-weight="700">MT-KNOWN</text><text x="112" y="46.0" font-size="10.5" fill="#5b6b66" text-anchor="start" font-weight="400">(mitigation)</text><line x1="573.0384615384615" y1="42.0" x2="609.8461538461539" y2="42.0" stroke="#1f5e50" stroke-width="3.2" stroke-linecap="round"/><circle cx="593.1153846153846" cy="42.0" r="6.5" fill="#1f5e50" stroke="#fff" stroke-width="1.5"/><text x="605.1153846153846" y="33.0" font-size="11.5" fill="#1f5e50" text-anchor="start" font-weight="700">1.53</text><text x="8" y="76.5" font-size="13" fill="#14302a" text-anchor="start" font-weight="700">MT-TENURE</text><text x="112" y="76.5" font-size="10.5" fill="#5b6b66" text-anchor="start" font-weight="400">(mitigation)</text><line x1="499.42307692307696" y1="72.5" x2="549.6153846153846" y2="72.5" stroke="#1f5e50" stroke-width="3.2" stroke-linecap="round"/><circle cx="526.1923076923077" cy="72.5" r="6.5" fill="#1f5e50" stroke="#fff" stroke-width="1.5"/><text x="538.1923076923077" y="63.5" font-size="11.5" fill="#1f5e50" text-anchor="start" font-weight="700">1.33</text><text x="8" y="107.0" font-size="13" fill="#14302a" text-anchor="start" font-weight="700">TX-01</text><text x="112" y="107.0" font-size="10.5" fill="#5b6b66" text-anchor="start" font-weight="400">(risk)</text><line x1="489.3846153846154" y1="103.0" x2="539.5769230769231" y2="103.0" stroke="#1f5e50" stroke-width="3.2" stroke-linecap="round"/><circle cx="516.1538461538462" cy="103.0" r="6.5" fill="#1f5e50" stroke="#fff" stroke-width="1.5"/><text x="528.1538461538462" y="94.0" font-size="11.5" fill="#1f5e50" text-anchor="start" font-weight="700">1.30</text><text x="8" y="137.5" font-size="13" fill="#14302a" text-anchor="start" font-weight="700">TX-03</text><text x="112" y="137.5" font-size="10.5" fill="#5b6b66" text-anchor="start" font-weight="400">(risk)</text><line x1="465.96153846153845" y1="133.5" x2="519.5" y2="133.5" stroke="#1f5e50" stroke-width="3.2" stroke-linecap="round"/><circle cx="496.0769230769231" cy="133.5" r="6.5" fill="#1f5e50" stroke="#fff" stroke-width="1.5"/><text x="508.0769230769231" y="124.5" font-size="11.5" fill="#1f5e50" text-anchor="start" font-weight="700">1.24</text><text x="8" y="168.0" font-size="13" fill="#14302a" text-anchor="start" font-weight="700">MT-RECUR</text><text x="112" y="168.0" font-size="10.5" fill="#5b6b66" text-anchor="start" font-weight="400">(mitigation)</text><line x1="462.61538461538464" y1="164.0" x2="499.42307692307696" y2="164.0" stroke="#1f5e50" stroke-width="3.2" stroke-linecap="round"/><circle cx="482.6923076923077" cy="164.0" r="6.5" fill="#1f5e50" stroke="#fff" stroke-width="1.5"/><text x="494.6923076923077" y="155.0" font-size="11.5" fill="#1f5e50" text-anchor="start" font-weight="700">1.20</text><text x="8" y="198.5" font-size="13" fill="#14302a" text-anchor="start" font-weight="700">MT-PAYEE</text><text x="112" y="198.5" font-size="10.5" fill="#5b6b66" text-anchor="start" font-weight="400">(mitigation)</text><line x1="449.2307692307693" y1="194.5" x2="465.96153846153845" y2="194.5" stroke="#1f5e50" stroke-width="3.2" stroke-linecap="round"/><circle cx="455.923076923077" cy="194.5" r="6.5" fill="#1f5e50" stroke="#fff" stroke-width="1.5"/><text x="467.923076923077" y="185.5" font-size="11.5" fill="#1f5e50" text-anchor="start" font-weight="700">1.12</text><text x="8" y="229.0" font-size="13" fill="#14302a" text-anchor="start" font-weight="700">AP-04</text><text x="112" y="229.0" font-size="10.5" fill="#5b6b66" text-anchor="start" font-weight="400">(risk)</text><line x1="432.50000000000006" y1="225.0" x2="462.61538461538464" y2="225.0" stroke="#1f5e50" stroke-width="3.2" stroke-linecap="round"/><circle cx="449.2307692307693" cy="225.0" r="6.5" fill="#1f5e50" stroke="#fff" stroke-width="1.5"/><text x="461.2307692307693" y="216.0" font-size="11.5" fill="#1f5e50" text-anchor="start" font-weight="700">1.10</text><text x="8" y="259.5" font-size="13" fill="#14302a" text-anchor="start" font-weight="700">TX-06</text><text x="112" y="259.5" font-size="10.5" fill="#5b6b66" text-anchor="start" font-weight="400">(risk)</text><line x1="368.9230769230769" y1="255.5" x2="399.03846153846155" y2="255.5" stroke="#a4473f" stroke-width="3.2" stroke-linecap="round"/><circle cx="382.3076923076924" cy="255.5" r="6.5" fill="#a4473f" stroke="#fff" stroke-width="1.5"/><text x="370.3076923076924" y="246.5" font-size="11.5" fill="#a4473f" text-anchor="end" font-weight="700">0.90</text><text x="8" y="290.0" font-size="13" fill="#14302a" text-anchor="start" font-weight="700">TX-04</text><text x="112" y="290.0" font-size="10.5" fill="#5b6b66" text-anchor="start" font-weight="400">(risk)</text><line x1="365.5769230769231" y1="286.0" x2="392.34615384615387" y2="286.0" stroke="#a4473f" stroke-width="3.2" stroke-linecap="round"/><circle cx="378.96153846153845" cy="286.0" r="6.5" fill="#a4473f" stroke="#fff" stroke-width="1.5"/><text x="366.96153846153845" y="277.0" font-size="11.5" fill="#a4473f" text-anchor="end" font-weight="700">0.89</text><text x="8" y="320.5" font-size="13" fill="#14302a" text-anchor="start" font-weight="700">NW-01</text><text x="112" y="320.5" font-size="10.5" fill="#5b6b66" text-anchor="start" font-weight="400">(risk)</text><line x1="261.84615384615387" y1="316.5" x2="288.61538461538464" y2="316.5" stroke="#a4473f" stroke-width="3.2" stroke-linecap="round"/><circle cx="275.2307692307692" cy="316.5" r="6.5" fill="#a4473f" stroke="#fff" stroke-width="1.5"/><text x="263.2307692307692" y="307.5" font-size="11.5" fill="#a4473f" text-anchor="end" font-weight="700">0.58</text></svg></div>
+<p class="note">Dot = learned multiplier on the hand weight; whisker = 90% bootstrap interval. Known-payee, tenure, new-payee and amount rules deserve more weight; network convergence (NW-01) deserves much less. The rare rules stay near 1.0: not enough evidence to move them.</p>
+</div></div>
+<div class="callout amber"><b>Shadow first, promote on evidence.</b> The learned score runs on every alert and is labelled comparison-only. It earns promotion to the official score only after analyst feedback confirms it on real data.</div>
+<div class="src">Source: evals/reports/ml_stability.md, learned_weights.md; backend/app/detect/ml.py, ml_model.json (rules version d88c05508daf). Unit-level metrics on synthetic data.</div>
+<div class="foot"><span>FinShield · Digital Fraud Investigation System · Submission brief</span><span>7</span></div></section><section class="s "><div class="eyebrow">THREE AGENTS</div><span class="tag">Agents</span><h1>AI that assists the system and the analyst, and never decides</h1>
+<div class="agents">
+<div class="ag"><div class="ah">Assists the <b>system</b></div><h3>Pattern Scout</h3>
+<p class="what">Finds linked behaviour that no rule alerted on: customers sharing a device, phone or payout account with no Medium/High alert; several customers starting to pay the same new account.</p>
+<ul><li>Deterministic mining finds candidates and their record IDs.</li><li>The LLM only words a hypothesis (with an innocent explanation) and a suggested rule.</li><li>Approve / dismiss needs a note; approving never changes a rule or score. Decisions survive re-scans.</li></ul></div>
+<div class="ag"><div class="ah">Assists the <b>analyst and evaluator</b></div><h3>Ask FinShield</h3>
+<p class="what">Answers questions about what is on screen: why a case is High, what links these customers, what to verify first.</p>
+<ul><li>The browser sends only the route and IDs; the backend loads the data from the store.</li><li>Every cited ID must exist in that data, otherwise it is dropped and shown as dropped.</li><li>Record text is data, never instructions. Context is bounded in size.</li><li>An answer can be saved to the case as a labelled AI assessment, and rejected later.</li></ul></div>
+<div class="ag"><div class="ah">Assists <b>continuity</b></div><h3>Reviewer memory</h3>
+<p class="what">Brings earlier reviewers' decisions, actions and notes on this case, and on cases sharing its customer or account, into the investigation.</p>
+<ul><li>Reads the append-only case history; nothing is rewritten.</li><li>Shown as "What earlier reviewers found" and passed to Ask FinShield as context.</li><li>System events are excluded; only human and AI-labelled entries count.</li></ul></div>
+</div>
+<div class="contract"><div><b>1 · Screen</b>Browser sends the route and IDs only</div><i>›</i><div><b>2 · Load</b>Backend reads the data from the store</div><i>›</i><div><b>3 · LLM</b>Words an answer or hypothesis; no tools, no writes</div><i>›</i><div><b>4 · Check</b>Every cited ID must exist; others are dropped</div><i>›</i><div><b>5 · Label</b>Marked AI-generated; saved only by the analyst</div><i>›</i><div><b>6 · Review</b>Analyst accepts, rejects or ignores; rules and scores untouched</div></div>
+<div class="guards" style="margin-top:16px"><b>Shared guardrails</b><span>Never decide</span><span>Real IDs only</span><span>Data, not orders</span><span>Labelled and rejectable</span><span>Works with AI off</span></div>
+<p class="note">Model: openai/gpt-oss-120b on Groq (GROQ_MODEL). The ML shadow score is a classifier, not an agent.</p>
+<div class="src">Source: backend/app/graph/scout.py, backend/app/ai/assistant.py, backend/app/graph/store.py</div>
+<div class="foot"><span>FinShield · Digital Fraud Investigation System · Submission brief</span><span>8</span></div></section><section class="s "><div class="eyebrow">SCALABILITY</div><span class="tag">Design patterns</span><h1>Built and measured today, and the production path we would take</h1>
+<div class="cols2 two">
+<div class="box built"><h3>Built and measured</h3>
+<ul>
+<li><b>6× faster detection</b> with identical output: 123 s → 19 s on 17k transactions and 11k logins, by removing quadratic hot spots (binary-search windows, sorted per-customer history).</li>
+<li><b>Idempotent runs.</b> Run ID is derived from data and rules; re-running the same inputs reuses the stored run with no new rows.</li>
+<li><b>Stable incident keys.</b> A case follows the same incident across runs; pinned splits are never undone.</li>
+<li><b>Rules as versioned config.</b> One file, hashed to a version; a change creates a new version and old alerts stay as history.</li>
+<li><b>Separable stages.</b> Signal collection and scoring are separate functions, so variants can be re-scored without recomputation.</li>
+<li><b>State in the database.</b> Pagination on lists; storage chosen by DATABASE_URL.</li>
+<li><b>Bounded graph and AI cost.</b> Hub nodes capped; assistant context capped; LLM calls time-limited with a deterministic fallback.</li>
+</ul></div>
+<div class="box path"><h3>Production path (designed, not built)</h3>
+<ul>
+<li><b>Storage.</b> Move from SQLite to Postgres through the same SQLAlchemy models; add indexes on entity and time.</li>
+<li><b>Workers.</b> Run detection as background jobs per tenant and per window instead of in the request.</li>
+<li><b>Streaming.</b> Incremental ingestion with windowed re-scoring for real-time alerts.</li>
+<li><b>Identity.</b> Login, roles and four-eyes approval before any account-affecting action is allowed.</li>
+<li><b>Feedback loop.</b> Analyst outcomes retrain the shadow model; approved Pattern Scout suggestions become tested rules through a rule editor.</li>
+<li><b>Observability.</b> Per-stage timings, alert-volume and drift dashboards.</li>
+</ul>
+<p class="note">Not yet tested: Postgres, multi-user concurrency, or volumes beyond the synthetic sets.</p></div>
+</div>
+<div class="src">Source: git history (perf commit d666d6a), backend/app/api/alert_store.py, backend/app/config.py, backend/app/detect/config.py</div>
+<div class="foot"><span>FinShield · Digital Fraud Investigation System · Submission brief</span><span>9</span></div></section><section class="s "><div class="eyebrow">RISKS AND MITIGATIONS</div><span class="tag">Enterprise controls</span><h1>Failure modes we designed for, and where to check each one</h1>
+<table class="risk"><thead><tr><th>Risk</th><th>Mitigation</th><th>Where</th></tr></thead><tbody><tr><td>LLM invents an entity or ID</td><td>Citations checked against the loaded data; unverifiable IDs dropped and shown</td><td class='code'>ai/assistant.py</td></tr><tr><td>Instructions hidden in record text</td><td>Record text passed as data; model has no tools and no write path</td><td class='code'>ai/assistant.py</td></tr><tr><td>LLM is down or slow</td><td>Time-limited calls; templates and quoted evidence take over</td><td class='code'>graph/scout.py</td></tr><tr><td>Model overreach</td><td>ML shadow only; test asserts identical rule output with and without it</td><td class='code'>tests/test_ml_shadow.py</td></tr><tr><td>Double counting one fact</td><td>Indicator families: only the strongest counts</td><td class='code'>score/scoring.py</td></tr><tr><td>False links from popular IDs</td><td>Hub cap; only device, phone, email, payout account group customers</td><td class='code'>graph/builder.py</td></tr><tr><td>Rule drift hides history</td><td>Rules hashed to a version; old alerts stay as snapshots</td><td class='code'>detect/config.py</td></tr><tr><td>Wrongful account action</td><td>Hold and verification are recorded recommendations, not executed</td><td class='code'>api/cases.py</td></tr><tr><td>Re-run undoes an analyst split</td><td>Split incidents are pinned across runs</td><td class='code'>api/cases.py</td></tr><tr><td>Mixed currencies summed</td><td>Exposure kept per currency, never added across</td><td class='code'>graph/priority.py</td></tr><tr><td>Weak evidence ranked first</td><td>Single-fact cases capped below top and labelled needs review</td><td class='code'>graph/priority.py</td></tr><tr><td>Tuning on the data we report</td><td>Reported on seeds never used for tuning</td><td class='code'>evals/</td></tr></tbody></table>
+<div class="src">Source: backend/app (paths shown), evals/reports</div>
+<div class="foot"><span>FinShield · Digital Fraud Investigation System · Submission brief</span><span>10</span></div></section><section class="s "><div class="eyebrow">EVALUATION</div><span class="tag">Evaluation</span><h1>Measured on held-out synthetic data we did not tune on</h1>
+<div class="cols-eval">
+<div>
+<div class="kp"><div><b>93%</b><span>of 56 fraud incidents caught at Medium+</span></div><div><b>57%</b><span>caught at High</span></div><div><b>0%</b><span>of 48 lookalikes at High (8% at Medium)</span></div><div><b>100%</b><span>recall on 16 brand-new customers</span></div></div>
+<div class="chart sm"><svg viewBox="0 0 560 366" width="560" height="366" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif"><text x="162" y="12" font-size="11" fill="#5b6b66" text-anchor="start" font-weight="400">light bar = Medium or High · dark bar = High</text><text x="0" y="36.0" font-size="12.5" fill="#14302a" text-anchor="start" font-weight="400">account takeover</text><rect x="162" y="24.0" width="330" height="16" rx="3" fill="#d9e1dd" opacity=".6"/><rect x="162" y="24.0" width="330.0" height="16" rx="3" fill="#5f8f82"/><rect x="162" y="24.0" width="330.0" height="16" rx="3" fill="#1f5e50"/><text x="502" y="36.5" font-size="11.5" fill="#5b6b66" text-anchor="start" font-weight="400">4/4 · 4 High</text><text x="0" y="62.5" font-size="12.5" fill="#14302a" text-anchor="start" font-weight="400">circular flow</text><rect x="162" y="50.5" width="330" height="16" rx="3" fill="#d9e1dd" opacity=".6"/><rect x="162" y="50.5" width="330.0" height="16" rx="3" fill="#5f8f82"/><rect x="162" y="50.5" width="330.0" height="16" rx="3" fill="#1f5e50"/><text x="502" y="63.0" font-size="11.5" fill="#5b6b66" text-anchor="start" font-weight="400">4/4 · 4 High</text><text x="0" y="89.0" font-size="12.5" fill="#14302a" text-anchor="start" font-weight="400">device ring</text><rect x="162" y="77.0" width="330" height="16" rx="3" fill="#d9e1dd" opacity=".6"/><rect x="162" y="77.0" width="330.0" height="16" rx="3" fill="#5f8f82"/><rect x="162" y="77.0" width="330.0" height="16" rx="3" fill="#1f5e50"/><text x="502" y="89.5" font-size="11.5" fill="#5b6b66" text-anchor="start" font-weight="400">4/4 · 4 High</text><text x="0" y="115.5" font-size="12.5" fill="#14302a" text-anchor="start" font-weight="400">dormant awakening</text><rect x="162" y="103.5" width="330" height="16" rx="3" fill="#d9e1dd" opacity=".6"/><rect x="162" y="103.5" width="330.0" height="16" rx="3" fill="#5f8f82"/><rect x="162" y="103.5" width="330.0" height="16" rx="3" fill="#1f5e50"/><text x="502" y="116.0" font-size="11.5" fill="#5b6b66" text-anchor="start" font-weight="400">4/4 · 4 High</text><text x="0" y="142.0" font-size="12.5" fill="#14302a" text-anchor="start" font-weight="400">identity reuse</text><rect x="162" y="130.0" width="330" height="16" rx="3" fill="#d9e1dd" opacity=".6"/><rect x="162" y="130.0" width="330.0" height="16" rx="3" fill="#5f8f82"/><rect x="162" y="130.0" width="0.0" height="16" rx="3" fill="#1f5e50"/><text x="502" y="142.5" font-size="11.5" fill="#5b6b66" text-anchor="start" font-weight="400">4/4 · 0 High</text><text x="0" y="168.5" font-size="12.5" fill="#14302a" text-anchor="start" font-weight="400">loan to mule</text><rect x="162" y="156.5" width="330" height="16" rx="3" fill="#d9e1dd" opacity=".6"/><rect x="162" y="156.5" width="330.0" height="16" rx="3" fill="#5f8f82"/><rect x="162" y="156.5" width="165.0" height="16" rx="3" fill="#1f5e50"/><text x="502" y="169.0" font-size="11.5" fill="#5b6b66" text-anchor="start" font-weight="400">4/4 · 2 High</text><text x="0" y="195.0" font-size="12.5" fill="#14302a" text-anchor="start" font-weight="400">mule dispersal</text><rect x="162" y="183.0" width="330" height="16" rx="3" fill="#d9e1dd" opacity=".6"/><rect x="162" y="183.0" width="330.0" height="16" rx="3" fill="#5f8f82"/><rect x="162" y="183.0" width="247.5" height="16" rx="3" fill="#1f5e50"/><text x="502" y="195.5" font-size="11.5" fill="#5b6b66" text-anchor="start" font-weight="400">8/8 · 6 High</text><text x="0" y="221.5" font-size="12.5" fill="#14302a" text-anchor="start" font-weight="400">payout swarm</text><rect x="162" y="209.5" width="330" height="16" rx="3" fill="#d9e1dd" opacity=".6"/><rect x="162" y="209.5" width="330.0" height="16" rx="3" fill="#5f8f82"/><rect x="162" y="209.5" width="0.0" height="16" rx="3" fill="#1f5e50"/><text x="502" y="222.0" font-size="11.5" fill="#5b6b66" text-anchor="start" font-weight="400">4/4 · 0 High</text><text x="0" y="248.0" font-size="12.5" fill="#14302a" text-anchor="start" font-weight="400">recipient convergence</text><rect x="162" y="236.0" width="330" height="16" rx="3" fill="#d9e1dd" opacity=".6"/><rect x="162" y="236.0" width="330.0" height="16" rx="3" fill="#5f8f82"/><rect x="162" y="236.0" width="330.0" height="16" rx="3" fill="#1f5e50"/><text x="502" y="248.5" font-size="11.5" fill="#5b6b66" text-anchor="start" font-weight="400">4/4 · 4 High</text><text x="0" y="274.5" font-size="12.5" fill="#14302a" text-anchor="start" font-weight="400">scam payment</text><rect x="162" y="262.5" width="330" height="16" rx="3" fill="#d9e1dd" opacity=".6"/><rect x="162" y="262.5" width="330.0" height="16" rx="3" fill="#5f8f82"/><rect x="162" y="262.5" width="0.0" height="16" rx="3" fill="#1f5e50"/><text x="502" y="275.0" font-size="11.5" fill="#5b6b66" text-anchor="start" font-weight="400">4/4 · 0 High</text><text x="0" y="301.0" font-size="12.5" fill="#a4473f" text-anchor="start" font-weight="600">slow drain</text><rect x="162" y="289.0" width="330" height="16" rx="3" fill="#d9e1dd" opacity=".6"/><rect x="162" y="289.0" width="0.0" height="16" rx="3" fill="#5f8f82"/><rect x="162" y="289.0" width="0.0" height="16" rx="3" fill="#1f5e50"/><text x="502" y="301.5" font-size="11.5" fill="#a4473f" text-anchor="start" font-weight="400">0/4 · 0 High</text><text x="0" y="327.5" font-size="12.5" fill="#14302a" text-anchor="start" font-weight="400">structuring</text><rect x="162" y="315.5" width="330" height="16" rx="3" fill="#d9e1dd" opacity=".6"/><rect x="162" y="315.5" width="330.0" height="16" rx="3" fill="#5f8f82"/><rect x="162" y="315.5" width="0.0" height="16" rx="3" fill="#1f5e50"/><text x="502" y="328.0" font-size="11.5" fill="#5b6b66" text-anchor="start" font-weight="400">4/4 · 0 High</text><text x="0" y="354.0" font-size="12.5" fill="#14302a" text-anchor="start" font-weight="400">takeover attempt</text><rect x="162" y="342.0" width="330" height="16" rx="3" fill="#d9e1dd" opacity=".6"/><rect x="162" y="342.0" width="330.0" height="16" rx="3" fill="#5f8f82"/><rect x="162" y="342.0" width="330.0" height="16" rx="3" fill="#1f5e50"/><text x="502" y="354.5" font-size="11.5" fill="#5b6b66" text-anchor="start" font-weight="400">4/4 · 4 High</text></svg></div>
+</div>
+<div>
+<h3>Read these numbers honestly</h3>
+<ul>
+<li>Synthetic data with planted, labelled scenarios. It measures the rules against what we can simulate, not real-world fraud rates.</li>
+<li><b>Open gap:</b> slow drain (small amounts over a long time) stays below Medium: 0 of 4.</li>
+<li>All 4 lookalike false positives are one scenario, loan_paid_to_supplier: 4 of 4 reach Medium, none reach High.</li>
+<li>Held-out workload: 9.5 Medium/High alerts per 1,000 events; 36 background false alarms.</li>
+<li>Precision of Medium/High alerts is 50% on this held-out set, counted per alert. The learned-weights table counts per scoring unit on three other seeds (76% to 88%), so the two are not directly comparable.</li>
+<li>34 of 34 hand-built calibration scenarios behave as designed; 399 backend tests pass.</li>
+</ul>
+</div></div>
+<div class="src">Source: evals/reports/d3_heldout.md (seed 3), golden_scorecard.md, ml_stability.md. Rules version d88c05508daf.</div>
+<div class="foot"><span>FinShield · Digital Fraud Investigation System · Submission brief</span><span>11</span></div></section><section class="s "><div class="eyebrow">LIMITS AND NEXT STEPS</div><span class="tag">Honest limits</span><h1>What we did not claim, and what comes next</h1>
+<div class="cols2 two">
+<div class="box"><h3>Limits today</h3><ul>
+<li>Synthetic data only; metrics are on simulated scenarios, not production fraud rates.</li>
+<li>Reviewer identity is a typed name; no login or role-based approval yet.</li>
+<li>Slow-drain fraud is not caught at Medium.</li>
+<li>Hold and verification are recommendations; no payment system is connected.</li>
+<li>AI wording depends on the LLM service; when off, the app falls back to quoted evidence.</li>
+<li>Learned weights are calibrated on synthetic scenarios and shown only as a shadow score.</li>
+</ul></div>
+<div class="box"><h3>Next steps</h3><ul>
+<li>Analyst feedback (confirmed fraud / false positive) retrains the shadow model; promote it only on real-data evidence.</li>
+<li>Login, roles and four-eyes approval for account-affecting actions.</li>
+<li>Streaming ingestion and windowed re-scoring.</li>
+<li>Approved Pattern Scout suggestions become tested rules through the rule editor.</li>
+<li>Long-window indicators for slow-drain and collusion patterns.</li>
+</ul></div>
+</div>
+<div class="foot"><span>FinShield · Digital Fraud Investigation System · Submission brief</span><span>12</span></div></section><section class="s "><div class="eyebrow">VERIFY IT YOURSELF</div><span class="tag">Reproducible</span><h1>Run it, click it, check the numbers</h1>
+<div class="cols2 two">
+<div class="box"><h3>Run</h3>
+<pre>python -m venv .venv
+.venv/Scripts/python -m pip install -r backend/requirements.txt
+./run.ps1                      # backend on :8000
+cd frontend &amp;&amp; npm run dev    # UI on :5173
+# UI: Data sources → Load demo dataset → Run detection
+
+cd backend &amp;&amp; ../.venv/Scripts/python -m pytest -q    # 399 tests</pre>
+<h3>Demo click path</h3>
+<ol><li><b>Overview.</b> Filter, open <i>T-C002-ATO</i> (High 85); include Low and open <i>DEV-HOME</i> (Low 18).</li>
+<li><b>Cases.</b> Open <i>CASE-7085d89848</i>: why grouped, priority factors, split, actions, report download.</li>
+<li><b>Network.</b> View network, click <i>DEV-RING</i> and <i>A-C011</i>; Run Pattern Scout; approve one with a note.</li>
+<li><b>Ask FinShield.</b> "What links these customers?"; save to the case as an AI assessment.</li></ol></div>
+<div class="box"><h3>Where each claim is evidenced</h3>
+<table class="mini ev"><tbody>
+<tr><td>Held-out detection results</td><td class="code">evals/reports/d3_heldout.md</td></tr>
+<tr><td>34 calibration scenarios</td><td class="code">evals/reports/golden_scorecard.md</td></tr>
+<tr><td>Learned weights, intervals</td><td class="code">evals/reports/ml_stability.md</td></tr>
+<tr><td>Rule weights and floors</td><td class="code">backend/app/detect/rules.yaml</td></tr>
+<tr><td>Scoring logic</td><td class="code">backend/app/score/scoring.py</td></tr>
+<tr><td>Relationship graph</td><td class="code">backend/app/graph/builder.py</td></tr>
+<tr><td>Case actions, split, report</td><td class="code">backend/app/api/cases.py</td></tr>
+<tr><td>Agents</td><td class="code">graph/scout.py · ai/assistant.py</td></tr>
+<tr><td>Trust boundary test</td><td class="code">backend/tests/test_ml_shadow.py</td></tr>
+</tbody></table>
+<p class="note">Demo data is synthetic and shipped with the repo. Reviewer names are typed text until login exists.</p></div>
+</div>
+<div class="foot"><span>FinShield · Digital Fraud Investigation System · Submission brief</span><span>13</span></div></section></body></html>
