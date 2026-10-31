@@ -10,6 +10,8 @@ Rules decide · a learned model advises · three AI agents explain and suggest �
 
 Azentio.ai Hackathon · Digital Fraud Investigation System · Level 1 + Level 2
 
+[**Live app**](https://finshield-rho.vercel.app)
+
 [**Submission brief (PDF)**](Docs/FinShield_Submission_Brief.pdf) · [Judges' brief](Docs/FinShield_Judges_Brief.pdf) · [Stage 1 deck](Docs/FinShield_Stage1_Presentation.html)
 
 </div>

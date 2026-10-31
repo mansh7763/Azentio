@@ -1,3 +1,4 @@
 .npm-cache/
 playwright-report/
 test-results/
+.vercel
