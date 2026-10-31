@@ -1,0 +1,16 @@
+customer_id,name,address,city,phone,email,onboarding_date,segment
+C001,Arjun Mehta,12 MG Road,Bengaluru,9800000001,c001@example.com,2024-01-15,retail
+C002,Priya Nair,4 Park Street,Kolkata,9800000002,c002@example.com,2024-01-15,retail
+C003,Ravi Kumar,9 Lake View,Chennai,9800000003,c003@example.com,2024-01-15,retail
+C004,Sneha Iyer,77 Hill Road,Mumbai,9800000004,c004@example.com,2024-01-15,retail
+C005,Kabir Shah,3 Ring Road,Delhi,9800000005,c005@example.com,2024-01-15,retail
+C006,Meera Joshi,21 Civil Lines,Pune,9800000006,c006@example.com,2024-01-15,retail
+C007,Farhan Ali,8 Station Road,Hyderabad,9800000007,c007@example.com,2024-01-15,retail
+C008,Rohit Sharma,55 Rose Lane,Jaipur,9800000008,c008@example.com,2024-01-15,retail
+C009,Anita Sharma,55 Rose Lane,Jaipur,9800000009,c009@example.com,2024-01-15,retail
+C015,Ishaan Sharma,55 Rose Lane,Jaipur,9800000015,c015@example.com,2024-01-15,retail
+C010,Vikram Rao,1 Beach Road,Goa,9800000010,c010@example.com,2024-01-15,retail
+C011,Neha Gupta,88 Mall Road,Shimla,9800000011,c011@example.com,2024-01-15,retail
+C012,Sanjay Das,5 Fort Area,Cuttack,9800000012,c012@example.com,2024-01-15,retail
+C013,Lata Pillai,19 Canal St,Kochi,9800000013,c013@example.com,2024-01-15,retail
+C014,Gita Menon,6 Temple St,Madurai,9800000014,c014@example.com,2024-01-15,retail

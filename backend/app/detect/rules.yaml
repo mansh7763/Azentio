@@ -1,0 +1,44 @@
+# Detection defaults. UI edits are stored as overrides (A persists them) and merged on top.
+# Weights are noisy-OR inputs (0-1). No single weight may reach 0.70, so no indicator is High on its own.
+
+bands:
+  medium: 40
+  high: 70
+
+floors:
+  ato_full: 85      # failed logins -> success -> new device -> high-value transfer
+  ato_movement: 70  # failed logins -> success -> beneficiary change or transfer
+  ato_partial: 55   # failed logins -> success -> new device or reset, no money moved (capped below High)
+  loan_mule: 80     # shared-identity applications -> rapid cash-out (AP-03, P1)
+
+windows:
+  chain_hours: 24
+  link_minutes: 30                # txn -> device via the customer's last successful login
+  burst_minutes: 15
+  success_after_burst_minutes: 30
+
+min_history: 5                    # TX-03 / DV-03 need this many prior events of that kind
+floor_amount: 100                 # minimum baseline denominator, in data currency
+
+indicators:
+  TX-01: {weight: 0.45, params: {z_min: 3.0}}                # amount far above own norm
+  TX-02: {weight: 0.30, params: {median_multiple: 2.0}}      # above own p95 and 2x median
+  TX-03: {weight: 0.25}                                      # new beneficiary
+  TX-04: {weight: 0.40, params: {count: 5, minutes: 60}}     # velocity
+  TX-05: {weight: 0.45, params: {new_payees: 4, hours: 24}}  # fan-out to new payees
+  HV-01: {weight: 0.0, params: {threshold: null, quantile: 0.90, balance_share: 0.5}}  # chain input only
+  DV-01: {weight: 0.45, params: {min_customers: 3}}          # raised from 0.35: ring device must reach High with DV-02
+  DV-02: {weight: 0.50}                                      # raised from 0.35: unrelated customers + apps on one device
+  DV-03: {weight: 0.25}                                      # new device for this customer
+  LG-01: {weight: 0.30, params: {failures: 5}}               # failed-login burst
+  LG-02: {weight: 0.35}                                      # success after the burst
+  LG-03: {weight: 0.35}                                      # sensitive action after a suspicious login
+  AP-01: {weight: 0.55, params: {min_applicants: 3}}         # identity attributes shared across applicants
+  AP-02: {weight: 0.30, params: {count: 3, days: 7}}         # application velocity
+
+mitigations:
+  MT-PAYEE: {weight: 0.60, params: {min_prior: 3, tolerance: 0.25}}  # regular payee, similar amount
+  MT-RECUR: {weight: 0.50, params: {min_prior: 3, cadence_days: 30, slack_days: 3}}  # monthly cadence
+  MT-KNOWN: {weight: 0.20}                                           # known device and usual city
+  MT-TENURE: {weight: 0.15, params: {days: 365}}                     # long tenure
+  MT-HOUSE: {weight: 0.60}                                           # household device sharing

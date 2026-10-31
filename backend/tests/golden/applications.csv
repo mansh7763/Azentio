@@ -1,0 +1,5 @@
+application_id,customer_id,product,amount,timestamp,device_id,ip,phone,email,status,disbursement_account
+APP-C010,C010,personal_loan,300000,2026-10-08T00:55:00Z,DEV-RING,10.9.9.9,9000000001,c010@example.com,submitted,A-C010
+APP-C011,C011,personal_loan,300000,2026-10-09T01:55:00Z,DEV-RING,10.9.9.9,9000000001,c011@example.com,submitted,A-C011
+APP-C012,C012,personal_loan,300000,2026-10-10T02:55:00Z,DEV-RING,10.9.9.9,9000000001,c012@example.com,submitted,A-C012
+APP-C013,C013,personal_loan,300000,2026-10-08T03:55:00Z,DEV-RING,10.9.9.9,9000000001,c013@example.com,submitted,A-C013
