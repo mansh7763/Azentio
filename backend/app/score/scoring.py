@@ -32,6 +32,11 @@ def effect(signal: Signal) -> float:
     return min(signal.weight * signal.strength, MAX_SIGNAL)
 
 
+def should_suspend(signals: list[Signal]) -> bool:
+    """Payee/recurrence/tenure mitigation is off while a login signal is active; a new device alone does not count."""
+    return any(s.indicator_id.startswith("LG-") for s in signals)
+
+
 def applied_mitigations(mitigating: list[Signal], suspend_mitigation: bool) -> list[Signal]:
     return [m for m in mitigating if not (suspend_mitigation and m.indicator_id in SUSPENDABLE) and effect(m) > 0]
 
