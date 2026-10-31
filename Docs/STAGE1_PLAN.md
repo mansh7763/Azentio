@@ -2,7 +2,7 @@
 
 ## 0. Revision 4: executable plan for a strict 120-minute deadline
 
-Reviewed 2026-10-31. **This section controls the build scope, priorities, timing and corrections wherever older sections or other planning documents disagree.** Earlier design detail remains below for reference; its wall-clock milestones, expanded P0 list and cloud rollout are superseded. T+0 is the start of the remaining build window, not 11:30. Documentation changes are proposals, not implemented features or passed tests.
+Reviewed 2026-10-31. **This section controls the build scope, priorities, timing and corrections wherever older sections or other planning documents disagree.** Earlier design detail remains below for reference; its wall-clock milestones, expanded P0 list and cloud rollout are superseded. **T+0 is 12:50 on 2026-10-31:** feature freeze T+105 = 14:35, hard stop T+120 = 14:50. Owners: A Harsh, B mansh7763, C Bhuvan. Documentation changes are proposals, not implemented features or passed tests.
 
 **Decision:** deliver upload -> validate/link -> detect -> explain risk -> dashboard -> case decision, locally, within two hours. Implement suspicious loan applications as the mandatory additional scenario. Reuse that same data to demonstrate identity reuse and lending-to-banking links. Only after the required journey passes, add one temporal money-flow extension. Creative value comes from combining evidence, testing innocent alternatives, and explaining the intervention point, rather than counting rules.
 
@@ -28,11 +28,11 @@ Source: `ProblemStatement-Stage-1.pdf`, visually reviewed pages 1-5. The larger 
 | R12 | p5: actionable alert case, ID, affected entity, category, risk, evidence, status; decisions preserved separately | Record Requires Investigation then False Positive; original alert unchanged, both decisions retained | A/C |
 | R13 | p1/p5: working end-to-end submission; synthetic/anonymised data, no unsupported AI claims | Fresh local start, full demo with network/LLM unavailable; describe rules honestly | All |
 
-The official brief allows rules, statistics, ML or combinations. An LLM, graph database, autonomous agents, cloud deployment and production payment blocking are not prerequisites. Organiser schemas/hidden tests are mentioned but their actual contents are unavailable here; hidden-test expectations remain hypotheses. The old 6 PM submission note is not established by these five PDF pages and does not extend the user's 120-minute limit.
+The official brief allows rules, statistics, ML or combinations. An LLM, graph database, autonomous agents, cloud deployment and production payment blocking are not prerequisites. Organiser schemas/hidden tests are mentioned but their actual contents are unavailable here; hidden-test expectations remain hypotheses. The 6:00 PM HackCulture deadline comes from the event briefing, not these five PDF pages. Treat it as the outer limit and T+120 as the team's own target; confirm it at the venue.
 
 ### 0.2 What actually fits
 
-Assumption: three available human workstreams as in `OWNERSHIP.md`; A and C still need named owners. This is an aggressive budget, not a guarantee. Existing working code may be reused only after a quick runnable check. No Nora service dependency is assumed.
+Assumption: three available human workstreams as in `OWNERSHIP.md`. This is an aggressive budget, not a guarantee. Existing working code may be reused only after a quick runnable check. No Nora service dependency is assumed.
 
 | Build now (P0) | Conditional single extension (P1) | Defer beyond two hours |
 | --- | --- | --- |
@@ -463,7 +463,7 @@ Shared Python types live in `backend/app/schemas.py` (Pydantic): `Signal`, `Cont
 
 All three are equal in effort: each owns one layer end to end, plus one stretch differentiator. The contract in 3.7 lets everyone build against stub data from minute 15.
 
-### Workstream A — Data platform, cases and API (owner: ____)
+### Workstream A — Data platform, cases and API (owner: Harsh)
 
 **Mission:** every byte enters cleanly, links correctly and is served to the UI. Owns persistence of alerts and cases.
 
@@ -499,7 +499,7 @@ All three are equal in effort: each owns one layer end to end, plus one stretch 
 - **Depends on:** A only for the end-to-end run; calibration uses the golden dataset. **Blocks:** C's alert screens need real alerts by ~13:00.
 - **Milestones:** 11:50 `Signal` / `Alert` types + rules.yaml skeleton · 12:00 golden dataset · 12:30 transfers + login indicators · 13:00 devices + loan apps + mitigation + scoring · 13:20 golden tests green · P1 afterwards: graph, anomaly, claims, scorecard.
 
-### Workstream C — Investigation experience and AI case intelligence (owner: ____)
+### Workstream C — Investigation experience and AI case intelligence (owner: Bhuvan)
 
 **Mission:** make the system usable and the intelligence visible. Owns the demo and the AI layer.
 

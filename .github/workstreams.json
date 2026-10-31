@@ -3,7 +3,7 @@
   "workstreams": {
     "A": {
       "name": "Data platform, cases and API",
-      "members": [],
+      "members": ["harsh@areta360.com"],
       "paths": [
         "backend/app/ingest/",
         "backend/app/models.py",
@@ -26,7 +26,7 @@
     },
     "C": {
       "name": "Investigation UI and AI",
-      "members": [],
+      "members": ["marri@teamdeccan.com"],
       "paths": [
         "frontend/",
         "backend/app/ai/",

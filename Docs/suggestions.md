@@ -15,7 +15,7 @@ Changes below are applied to the planning document, **not to application code**.
 | `STAGE1_PLAN.md` revisions 1-3 | Good evidence/case design, but too many P0 indicators, larger datasets, expired wall-clock milestones and cloud work | Section 0 supersedes scope/timing; use local SQLite and small fixtures, freeze features at T+105 |
 | Research / `FRAUD_THREAT_EXPANSION.md` | Useful 32-family threat catalogue and benign alternatives; early sections propose an alert-first agentic MVP and a broad service stack | Use section 32 for hypotheses; do not replace ingestion/detection with an existing-alert copilot; no agent orchestration or new service stack in two hours |
 | `EVALUATION.md` | Valuable test library but ambitious synthetic/scale metrics and some outdated expectations | Use G1-G12 plus R1-R13 as the timeboxed gate; retain extended tests for later |
-| `OWNERSHIP.md` | B is named; A and C are blank; shared-file ownership matters | Assign A/C at T+0; retain folder ownership and one editor for shared types |
+| `OWNERSHIP.md` | Shared-file ownership matters | Owners are now A Harsh, B mansh7763, C Bhuvan; retain folder ownership and one editor for shared types |
 
 The official minimum table's fourth row is **legitimate lookalikes**, not a fourth fraud category. Research sections 22/26/27 blur broader catalogue goals with minimum behaviours. Our plan covers identity/cross-system context with exact links while explicitly deferring advanced media, insurer and multi-hop implementations. The brief permits rules/statistics/ML; no requirement forces an LLM.
 
@@ -72,8 +72,11 @@ A protective-action recommendation should say who must verify what, using which 
 
 ## Immediate handoff
 
-- At T+0 assign A/C, confirm the actual start time, check organiser sample availability and lock the data/API examples.
+- T+0 is 12:50, with feature freeze at 14:35 and hard stop at 14:50. Owners: A Harsh, B mansh7763, C Bhuvan. Check organiser sample availability and lock the data/API examples.
+- **B (mansh7763), align the detection code with section 0.4:** make HV-01 use prior same-currency data (`transfers.py:17`); remove the High floor for ordinary payments after failures (`chains.py:35`); set the chain window to 30 minutes, burst to 10 and velocity to 20 (`rules.yaml`); drop TX-02 from P0 scoring. Update the tests and golden expectations with these changes.
+- **A (Harsh):** remove `/api/admin/reset` from `records.py`, and its entry from `tests/test_health.py` after telling B. Build `ingest/` and `models.py`.
+- **C (Bhuvan):** create `frontend/`; nothing exists there yet.
 - If no organiser samples arrive, use clearly labelled synthetic fixtures and keep schema assumptions explicit.
 - Keep all six dashboard filters, all three formats, one extra loan scenario and preserved alert decisions inside P0.
 - At T+95 start AP-03 only when R1-R13 pass. Otherwise fix defects. Freeze features at T+105.
-- Record actual results, rehearse offline and package by T+120. The older 6 PM note does not extend this budget.
+- Record actual results, rehearse offline and package by T+120. Treat 6:00 PM as the outer HackCulture limit, and confirm it at the venue.

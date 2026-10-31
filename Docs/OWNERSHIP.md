@@ -8,12 +8,12 @@ The source of truth is `.github/workstreams.json`. **Each person adds their git 
 
 | Workstream | Owner | Folders |
 | --- | --- | --- |
-| A — Data platform, cases and API | ____ | `backend/app/ingest/`, `backend/app/models.py`, `backend/app/db.py`, `backend/app/api/` (except `dashboard.py`), `backend/app/datagen/` |
+| A — Data platform, cases and API | Harsh (harshareta360) | `backend/app/ingest/`, `backend/app/models.py`, `backend/app/db.py`, `backend/app/api/` (except `dashboard.py`), `backend/app/datagen/` |
 | B — Detection and risk intelligence | mansh7763 | `backend/app/features/`, `backend/app/detect/`, `backend/app/graph/`, `backend/app/score/`, `backend/tests/`, `evals/` |
-| C — Investigation UI and AI | ____ | `frontend/`, `backend/app/ai/`, `backend/app/api/dashboard.py` |
+| C — Investigation UI and AI | Bhuvan (bhuvan-cpu) | `frontend/`, `backend/app/ai/`, `backend/app/api/dashboard.py` |
+| **Shared** — announce every change in chat | everyone | `backend/app/schemas.py`, `backend/app/main.py`, `requirements.txt`, `backend/requirements.txt`, `frontend/package.json`, `frontend/src/types.ts`, `.gitignore`, `.env.example` |
 
 When paths nest, the most specific one wins: `backend/app/api/dashboard.py` is C's even though the rest of `backend/app/api/` is A's.
-| **Shared** — announce every change in chat | everyone | `backend/app/schemas.py`, `backend/app/main.py`, `requirements.txt`, `backend/requirements.txt`, `frontend/package.json`, `frontend/src/types.ts`, `.gitignore`, `.env.example` |
 
 ## How you get warned
 
