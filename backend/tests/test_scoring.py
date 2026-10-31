@@ -77,11 +77,13 @@ def test_floor_beats_mitigation(cfg):
     assert b.score == 85 and b.band == Band.high
 
 
-def test_suspension_skips_payee_but_not_known_device(cfg):
-    r, m = [risk("A", 0.45)], [mit("MT-PAYEE", 0.6), mit("MT-KNOWN", 0.2)]
+def test_suspension_removes_payee_and_its_supporting_factors(cfg):
+    r, m = [risk("A", 0.45)], [mit("MT-PAYEE", 0.6), mit("MT-KNOWN", 0.2), mit("MT-HOUSE", 0.6)]
     suspended = score(r, m, None, True, cfg)
     assert suspended.mitigation_suspended
-    assert suspended.final == pytest.approx(45 * 0.8)
+    assert suspended.final == pytest.approx(45 * 0.4 * 0.8)  # household still applies, and supports known device
+    alone = score(r, [mit("MT-PAYEE", 0.6), mit("MT-KNOWN", 0.2)], None, True, cfg)
+    assert alone.final == pytest.approx(45)  # payee suspended -> known device has nothing to support
 
 
 def test_weight_clamped_no_log_zero(cfg):
@@ -106,3 +108,11 @@ def test_cap_keeps_score_below_high_and_lines_sum(cfg):
     assert b.score == 69 and b.band == Band.medium
     assert sum(c.points for c in lines) == 69
     assert [c for c in lines if c.indicator_id == "CAP"][0].points < 0
+
+
+def test_weak_mitigations_alone_do_not_damp(cfg):
+    r = [risk("TX-01", 0.45), risk("TX-03", 0.25)]
+    alone = score(r, [mit("MT-KNOWN", 0.2), mit("MT-TENURE", 0.15)], None, False, cfg)
+    assert alone.final == pytest.approx(alone.undamped)
+    supported = score(r, [mit("MT-PAYEE", 0.6), mit("MT-KNOWN", 0.2)], None, False, cfg)
+    assert supported.final == pytest.approx(supported.undamped * 0.4 * 0.8)

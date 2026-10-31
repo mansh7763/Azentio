@@ -59,6 +59,8 @@ def transfer_signals(ds: Dataset, cfg: RulesConfig, profiles: pd.DataFrame) -> l
         if cfg.enabled("TX-01") and prof["baseline_source"] != "none" and prof["z"] >= p1.get("z_min", 3.0):
             ratio = amount / median if median else float("inf")
             strength = min(1.0, max(0.5, prof["z"] / (2 * p1.get("z_min", 3.0))))
+            if prof["baseline_source"] != "customer":
+                strength *= 0.5  # other customers' spending is weaker evidence than the customer's own history
             whose = "the customer's" if prof["baseline_source"] == "customer" else f"the {prof['baseline_source']}"
             out.append(_signal(cfg, "TX-01", t, f"{money(amount, cur)} is {ratio:,.0f}× {whose} usual {money(median, cur)}", strength))
 

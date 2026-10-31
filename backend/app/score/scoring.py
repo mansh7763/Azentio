@@ -7,6 +7,7 @@ from app.schemas import Band, Category, Signal
 
 MAX_SIGNAL = 0.99  # keeps -ln(1 - w*s) finite
 SUSPENDABLE = {"MT-PAYEE", "MT-RECUR", "MT-TENURE"}  # switched off while a login signal is active
+SUPPORTING = {"MT-KNOWN", "MT-TENURE"}  # only damp when a strong lookalike factor is also present
 
 
 @dataclass
@@ -38,7 +39,12 @@ def should_suspend(signals: list[Signal]) -> bool:
 
 
 def applied_mitigations(mitigating: list[Signal], suspend_mitigation: bool) -> list[Signal]:
-    return [m for m in mitigating if not (suspend_mitigation and m.indicator_id in SUSPENDABLE) and effect(m) > 0]
+    """Mitigations that actually damp the score. A known device or long tenure does not explain a large amount
+    or a burst of new payees, so those only count alongside a strong factor (regular payee, recurrence, household)."""
+    usable = [m for m in mitigating if not (suspend_mitigation and m.indicator_id in SUSPENDABLE) and effect(m) > 0]
+    if not any(m.indicator_id not in SUPPORTING for m in usable):
+        return []
+    return usable
 
 
 def band_for(value: int, cfg: RulesConfig) -> Band:

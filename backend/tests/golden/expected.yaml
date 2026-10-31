@@ -2,6 +2,26 @@
   unit_type: transaction
   entity: T-C001-NEW
   max_band: Low
+- id: LK-T7-M0
+  unit_type: transaction
+  entity: T-C001-M0
+  max_band: Low
+- id: LK-T7-M1
+  unit_type: transaction
+  entity: T-C001-M1
+  max_band: Low
+- id: LK-T7-M2
+  unit_type: transaction
+  entity: T-C001-M2
+  max_band: Low
+- id: LK-T7-M3
+  unit_type: transaction
+  entity: T-C001-M3
+  max_band: Low
+- id: LK-T7-M4
+  unit_type: transaction
+  entity: T-C001-M4
+  max_band: Low
 - id: LK-T6
   unit_type: transaction
   entity: T-C002-ATO

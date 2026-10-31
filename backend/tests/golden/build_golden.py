@@ -65,6 +65,9 @@ monthly("C001", "SUP-1", 200000)
 login("L-C001-NOW", "C001", D + timedelta(hours=9, minutes=50), "DEV-C001")
 txn("T-C001-NEW", "C001", D + timedelta(hours=10), 210000, "SUP-1")
 expected.append({"id": "LK-T5", "unit_type": "transaction", "entity": "T-C001-NEW", "max_band": "Low"})
+# LK-T7 — the same payer's first months (thin history, compared with other customers) must not be Medium
+for i in range(5):
+    expected.append({"id": f"LK-T7-M{i}", "unit_type": "transaction", "entity": f"T-C001-M{i}", "max_band": "Low"})
 
 # LK-T6 / LG-T1 — same profile, then account takeover: failures -> new device -> high-value transfer -> High
 customer("C002", "Priya Nair", "4 Park Street", "Kolkata")
