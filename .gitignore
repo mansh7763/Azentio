@@ -26,3 +26,9 @@ __pycache__/
 .cursorignorerulesrulesrulesrulesrulesrulesrulesrulesrulesrulesrules
 .cursorignorerulesrulesrulesrulesrulesrulesrulesrulesrulesrulesrulesrules
 .cursorignorerulesrulesrulesrulesrulesrulesrulesrulesrulesrulesrulesrulesrules
+
+.venv/
+node_modules/
+dist/
+*.db
+*.sqlite3
