@@ -7,6 +7,7 @@ from app.api import alerts, cases, dashboard, records
 from app.config import settings
 from app.db import init_db
 from app.detect import router as detect
+from app.graph import router as graph
 
 init_db()
 
@@ -26,5 +27,5 @@ def health():
     return {"status": "ok"}
 
 
-for module in (records, alerts, cases, dashboard, detect):
+for module in (records, alerts, cases, dashboard, detect, graph):
     app.include_router(module.router, prefix="/api")
