@@ -13,7 +13,7 @@ import yaml
 OUT = Path(__file__).resolve().parent
 BASE = datetime(2026, 4, 1, 9, 0, tzinfo=timezone.utc)
 
-customers, accounts, txns, logins, apps = [], [], [], [], []
+customers, accounts, txns, logins, apps, claims = [], [], [], [], [], []
 
 
 def iso(dt):
@@ -260,6 +260,14 @@ txn("T-C016-SUP", "C016", disb16 + timedelta(hours=3), 170000, "SUPPLIER-16")
 expected.append({"id": "G12-benign", "unit_type": "transaction", "entity": "T-C016-SUP", "max_band": "Low",
                  "no_chain": True})
 
+# L2-1 / suggestion #6 — insurance claims paid out into C011's account (the loan-mule account): a new claimant C026
+# and ring member C012. Links lending, insurance and banking through one payout account.
+customer("C026", "Ravi Teja", "3 Port Rd", "Vizag")
+for cid, n, amount, desc in (("C026", 1, 120000, "Water damage to kitchen"), ("C012", 2, 90000, "Two-wheeler theft")):
+    claims.append({"claim_id": f"CLM-{n}", "policy_id": f"POL-{cid}", "customer_id": cid,
+                   "incident_date": iso(D + timedelta(days=9 + n)), "amount": str(amount), "description": desc,
+                   "payout_account": "A-C011", "timestamp": iso(D + timedelta(days=10 + n))})
+
 
 def write(name, rows):
     with open(OUT / f"{name}.csv", "w", newline="", encoding="utf-8") as f:
@@ -271,7 +279,7 @@ def write(name, rows):
 
 if __name__ == "__main__":
     for name, rows in [("customers", customers), ("accounts", accounts), ("transactions", txns),
-                       ("logins", logins), ("applications", apps)]:
+                       ("logins", logins), ("applications", apps), ("claims", claims)]:
         write(name, rows)
     with open(OUT / "expected.yaml", "w", encoding="utf-8") as f:
         yaml.safe_dump(expected, f, sort_keys=False)

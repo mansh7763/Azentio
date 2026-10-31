@@ -68,6 +68,8 @@ def build_graph(ds: Dataset) -> nx.Graph:
     for _, cl in ds.get("claims").iterrows():
         _link(g, cl["customer_id"], "customer", cl["claim_id"], "claim", "claimed", cl["claim_id"])
         _link(g, cl["claim_id"], "claim", cl["policy_id"], "policy", "policy", cl["claim_id"])
+        if acc := _s(cl.get("payout_account")):
+            _link(g, cl["claim_id"], "claim", acc, "account", "payout", cl["claim_id"])
     return g
 
 
@@ -78,7 +80,7 @@ def _customers_of(g: nx.Graph, node: str) -> dict[str, list[str]]:
         kind = g.nodes[nb].get("type")
         if kind == "customer":
             out[nb] += g.edges[node, nb]["evidence_ids"]
-        elif kind == "application":
+        elif kind in ("application", "claim"):
             for cust in g.neighbors(nb):
                 if g.nodes[cust].get("type") == "customer":
                     out[cust] += g.edges[node, nb]["evidence_ids"]

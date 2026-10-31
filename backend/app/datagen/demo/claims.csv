@@ -1,0 +1,3 @@
+claim_id,policy_id,customer_id,incident_date,amount,description,payout_account,timestamp
+CLM-1,POL-C026,C026,2026-10-11T00:00:00Z,120000,Water damage to kitchen,A-C011,2026-10-12T00:00:00Z
+CLM-2,POL-C012,C012,2026-10-12T00:00:00Z,90000,Two-wheeler theft,A-C011,2026-10-13T00:00:00Z
