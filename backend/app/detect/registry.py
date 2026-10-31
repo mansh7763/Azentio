@@ -18,7 +18,8 @@ class Indicator:
 _DEVICE = ("logins.device_id",)
 REGISTRY: list[Indicator] = [
     *(Indicator(i, ("transactions",), "transfer") for i in ("TX-01", "TX-02", "TX-03", "TX-04", "TX-05", "HV-01",
-                                                          "TX-06", "TX-07", "TX-08")),
+                                                          "TX-08")),
+    *(Indicator(i, ("transactions",), "transfer", ("transactions.currency",)) for i in ("TX-06", "TX-07", "TX-09")),
     Indicator("NW-01", ("transactions",), "network"),
     Indicator("NW-02", ("transactions",), "network"),
     *(Indicator(i, ("logins",), "login", ("logins.outcome",)) for i in ("LG-01", "LG-02", "LG-03")),
@@ -30,9 +31,10 @@ REGISTRY: list[Indicator] = [
     Indicator("ID-01", ("applications", "customers"), "application", ("applications.phone|applications.email",)),
     Indicator("ID-02", ("applications", "customers"), "application", ("customers.phone|customers.email",)),
     Indicator("AP-03", ("applications", "transactions"), "application",
-              ("applications.disbursement_account|transactions.application_id",)),
+              ("applications.disbursement_account|transactions.application_id", "transactions.currency")),
     *(Indicator(i, ("transactions",), "mitigation") for i in ("MT-PAYEE", "MT-RECUR", "MT-TENURE")),
     Indicator("MT-KNOWN", ("transactions", "logins"), "mitigation", _DEVICE),
+    Indicator("MT-OWN", ("transactions", "accounts"), "mitigation"),
 ]
 
 

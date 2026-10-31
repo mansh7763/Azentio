@@ -38,11 +38,12 @@ indicators:
   AP-03: {weight: 0.50, params: {share: 0.7, hours: 48}}     # loan disbursement -> >=70% to new recipients in 48h (P1, F04)
   ID-01: {weight: 0.35}                                      # application contact differs from profile and is reused by others
   AP-04: {weight: 0.45, params: {min_applicants: 3, days: 7}}  # >=3 applicants name one payout account, any devices (evasion of AP-01)
-  ID-02: {weight: 0.30}                                      # profile phone/mailbox shared with another name after normalising (F01)
+  ID-02: {weight: 0.40}                                      # profile contact shared with another name (F01); 0.30 -> 0.40 on D2: it fires on a loan application, F01's corroboration
   # Issue #6: frauds that stay under per-payment rules. Weights < 0.70; each needs corroboration for High.
   TX-06: {weight: 0.40, params: {windows_hours: [24, 168], quantile: 0.95, min_windows: 5, min_ratio: 1.5}}  # rolling total >= 1.5x own p95 (F10)
   TX-07: {weight: 0.40, params: {count: 3, hours: 24, low: 0.75, high: 1.0, min_z: 1.0}}  # >=3 unusually high payments kept just below the flag level
   TX-08: {weight: 0.30, params: {dormant_days: 90, observed_days: 180, follow_days: 7}}  # dormant account wakes and pays new payees (F09)
+  TX-09: {weight: 0.45, params: {share: 0.7, hours: 24, min_payees: 3}}  # >=70% of an incoming credit leaves to >=3 new payees in 24h (mule pass-through; no history needed)
   NW-01: {weight: 0.40, params: {min_payers: 3, hours: 72, established_payers: 3}}  # unrelated customers' first payments converge (F05)
   NW-02: {weight: 0.45, params: {max_hops: 4, hours: 72, tolerance: 0.10}}  # money returns to its origin through 3+ accounts (F11)
 
@@ -51,4 +52,5 @@ mitigations:
   MT-RECUR: {weight: 0.50, params: {min_prior: 3, cadence_days: 30, slack_days: 3}}  # monthly cadence
   MT-KNOWN: {weight: 0.20}                                           # known device and usual city
   MT-TENURE: {weight: 0.15, params: {days: 365}}                     # long tenure
-  MT-HOUSE: {weight: 0.60}                                           # household device sharing
+  MT-HOUSE: {weight: 0.60}                                          # household device sharing
+  MT-OWN: {weight: 0.80}                                            # transfer to the customer's own account (sweep)

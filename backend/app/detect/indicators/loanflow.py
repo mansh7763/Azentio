@@ -20,10 +20,14 @@ def _disbursements(txns: pd.DataFrame, apps: pd.DataFrame) -> list[tuple[pd.Seri
     pairs = []
     by_id = apps.set_index("application_id", drop=False)
     for _, t in txns.iterrows():
+        if not is_successful(t.get("status")) or float(t["amount"]) <= 0:
+            continue
         kind = str(t.get("type") or "").lower()
         app_ref = t.get("application_id") if "application_id" in txns else None
         if isinstance(app_ref, str) and app_ref in by_id.index:
-            pairs.append((by_id.loc[app_ref], t))
+            app = by_id.loc[app_ref]
+            if is_inbound(kind) and app["timestamp"] <= t["timestamp"]:
+                pairs.append((app, t))
         elif kind in DISBURSEMENT_TYPES and "disbursement_account" in apps:
             match = apps[(apps["disbursement_account"] == t["beneficiary_account"]) & (apps["timestamp"] <= t["timestamp"])]
             if not match.empty:
@@ -42,10 +46,15 @@ def loan_outflow_signals(ds: Dataset, cfg: RulesConfig, profiles: pd.DataFrame, 
     out: list[Signal] = []
     for app, disb in _disbursements(txns, apps):
         amount, account = float(disb["amount"]), disb["beneficiary_account"]
+        currency = str(disb.get("currency") or "").strip().upper()
+        if not currency:
+            continue
         outflows = txns[(txns["sender_account"] == account) & (txns["timestamp"] > disb["timestamp"])
                         & (txns["timestamp"] <= disb["timestamp"] + window)].sort_values("seq")
         total, counted, recipients = 0.0, [], set()
         for _, t in outflows.iterrows():
+            if str(t.get("currency") or "").strip().upper() != currency:
+                continue
             if is_inbound(t.get("type")) or not is_successful(t.get("status")):
                 continue
             if profiles.loc[t["txn_id"], "is_first_payment"] is not True:

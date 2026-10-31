@@ -122,7 +122,7 @@ def test_either_column_satisfies_an_alternative():
     cfg = load_rules()
     apps = _apps([("C1", None)]).assign(phone="9800000001")
     txns = pd.DataFrame([{"txn_id": "T1", "sender_account": "A1", "timestamp": _iso(T0), "amount": "10",
-                          "beneficiary_account": "B1", "application_id": "APP-C1"}])
+                          "beneficiary_account": "B1", "application_id": "APP-C1", "currency": "INR"}])
     ds = prepare(Dataset.from_frames(applications=apps, transactions=txns), cfg)
     run, skipped = available(ds, cfg)
     assert "AP-03" in run, skipped.get("AP-03")

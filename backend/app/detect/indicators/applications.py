@@ -116,7 +116,8 @@ def application_signals(ds: Dataset, cfg: RulesConfig) -> list[Signal]:
                 if not value or not mine.get(attr) or value == mine[attr]:
                     continue
                 others_apps = prior[(prior[f"_{attr}"] == value) & (prior["customer_id"] != a["customer_id"])]
-                others_profiles = [cid for cid, p in profile.items() if p.get(attr) == value and cid != a["customer_id"]]
+                others_profiles = [cid for cid, p in profile.items() if p.get(attr) == value and cid != a["customer_id"]
+                                   and (pd.isna(people[cid]["since"]) or people[cid]["since"] <= a["timestamp"])]
                 others = sorted(set(others_apps["customer_id"]) | set(others_profiles))
                 if others:
                     out.append(_signal(cfg, "ID-01", a, f"Application {attr} {a[attr]} differs from the customer's "

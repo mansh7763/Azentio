@@ -16,7 +16,8 @@ FAMILY = {
     # Issue #6: rolling totals and structuring measure the same money as the amount rules; ID-02 is ID-01 after
     # normalisation. Only the strongest of each family counts, so they never stack on one fact.
     "TX-06": "amount", "TX-07": "amount", "ID-01": "identity", "ID-02": "identity",
-    "AP-01": "coordination", "AP-04": "coordination",  # a shared payout inside a same-device ring is one fact
+    "AP-01": "coordination", "AP-04": "coordination",
+    "AP-03": "pass_through", "TX-09": "pass_through",  # a loan cash-out is also a pass-through of a credit  # a shared payout inside a same-device ring is one fact
 }
 
 

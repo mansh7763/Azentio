@@ -32,6 +32,8 @@ def mitigation_signals(ds: Dataset, cfg: RulesConfig, profiles: pd.DataFrame, bu
     ok_logins = logins[logins["outcome"].astype(str).str.lower() == "success"] if not logins.empty else logins
     customers = ds.get("customers")
     onboarded = dict(zip(customers["customer_id"], customers["onboarding_date"])) if "onboarding_date" in customers else {}
+    accounts = ds.get("accounts")
+    owner = dict(zip(accounts["account_id"], accounts["customer_id"])) if not accounts.empty else {}
 
     # Successful logins per (customer, device), in time order, so "seen before this payment" is a binary search
     # rather than a scan of every login for every transaction.
@@ -62,6 +64,12 @@ def mitigation_signals(ds: Dataset, cfg: RulesConfig, profiles: pd.DataFrame, bu
             if before >= 2:
                 out.append(_mit(cfg, "MT-KNOWN", t, f"Made from the customer's usual device {device}",
                                 events[max(0, before - 3):before]))
+
+        # MT-OWN: money moved between two accounts of the same customer is a sweep, not a new beneficiary
+        # (evaluation D2: own-account sweeps were Medium on "large amount + new payee").
+        if cfg.enabled("MT-OWN") and t["customer_id"] and owner.get(t["beneficiary_account"]) == t["customer_id"]:
+            out.append(_mit(cfg, "MT-OWN", t, f"Transfer to the customer's own account {t['beneficiary_account']}",
+                            [t["txn_id"]]))
 
         since = onboarded.get(t["customer_id"])
         days = tenure_p.get("days", 365)

@@ -1,0 +1,504 @@
+{
+  "note": "Synthetic data from evals/generate.py with planted, labelled incidents. These numbers measure the rules against the scenarios we know how to simulate; they are not real-world fraud detection rates.",
+  "dataset": "D2 seed 2; corrected independent household phones",
+  "before_original_fixture": {
+    "fraud_incidents": 56,
+    "lookalike_incidents": 48,
+    "recall_medium_plus": 0.929,
+    "recall_high": 0.5,
+    "lookalike_fp_medium_plus": 0.188,
+    "lookalike_fp_high": 0.0,
+    "precision_medium_plus": 0.422,
+    "background_flags_medium_plus": 36,
+    "alerts_medium_plus_per_1k_events": 9.85,
+    "recall_medium_plus_new_customers": 1.0,
+    "recall_medium_plus_established": 0.9,
+    "new_customer_incidents": 16,
+    "by_scenario": {
+      "account_takeover": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 4
+      },
+      "circular_flow": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 4
+      },
+      "device_ring": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 4
+      },
+      "dormant_awakening": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 2
+      },
+      "identity_reuse": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "loan_to_mule": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 1
+      },
+      "mule_dispersal": {
+        "kind": "fraud",
+        "total": 8,
+        "medium_plus": 8,
+        "high": 5
+      },
+      "payout_swarm": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "recipient_convergence": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 4
+      },
+      "scam_payment": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "slow_drain": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "structuring": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "takeover_attempt": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 4
+      },
+      "business_payroll": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "family_landline": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "forgot_password": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "household_device": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "loan_paid_to_supplier": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "merchant_collection": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "new_phone": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "office_colleagues": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "own_account_sweep": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "regular_large_payment": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "seasonal_return": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "shopping_spree": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 1,
+        "high": 0
+      }
+    }
+  },
+  "after_original_fixture": {
+    "fraud_incidents": 56,
+    "lookalike_incidents": 48,
+    "recall_medium_plus": 0.929,
+    "recall_high": 0.5,
+    "lookalike_fp_medium_plus": 0.188,
+    "lookalike_fp_high": 0.0,
+    "precision_medium_plus": 0.422,
+    "background_flags_medium_plus": 36,
+    "alerts_medium_plus_per_1k_events": 9.85,
+    "recall_medium_plus_new_customers": 1.0,
+    "recall_medium_plus_established": 0.9,
+    "new_customer_incidents": 16,
+    "by_scenario": {
+      "account_takeover": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 4
+      },
+      "circular_flow": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 4
+      },
+      "device_ring": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 4
+      },
+      "dormant_awakening": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 2
+      },
+      "identity_reuse": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "loan_to_mule": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 1
+      },
+      "mule_dispersal": {
+        "kind": "fraud",
+        "total": 8,
+        "medium_plus": 8,
+        "high": 5
+      },
+      "payout_swarm": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "recipient_convergence": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 4
+      },
+      "scam_payment": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "slow_drain": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "structuring": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "takeover_attempt": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 4
+      },
+      "business_payroll": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "family_landline": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "forgot_password": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "household_device": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "loan_paid_to_supplier": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "merchant_collection": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "new_phone": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "office_colleagues": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "own_account_sweep": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "regular_large_payment": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "seasonal_return": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "shopping_spree": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 1,
+        "high": 0
+      }
+    }
+  },
+  "after_corrected_fixture": {
+    "fraud_incidents": 56,
+    "lookalike_incidents": 48,
+    "recall_medium_plus": 0.929,
+    "recall_high": 0.5,
+    "lookalike_fp_medium_plus": 0.104,
+    "lookalike_fp_high": 0.0,
+    "precision_medium_plus": 0.429,
+    "background_flags_medium_plus": 36,
+    "alerts_medium_plus_per_1k_events": 9.71,
+    "recall_medium_plus_new_customers": 1.0,
+    "recall_medium_plus_established": 0.9,
+    "new_customer_incidents": 16,
+    "by_scenario": {
+      "account_takeover": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 4
+      },
+      "circular_flow": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 4
+      },
+      "device_ring": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 4
+      },
+      "dormant_awakening": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 2
+      },
+      "identity_reuse": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "loan_to_mule": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 1
+      },
+      "mule_dispersal": {
+        "kind": "fraud",
+        "total": 8,
+        "medium_plus": 8,
+        "high": 5
+      },
+      "payout_swarm": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "recipient_convergence": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 4
+      },
+      "scam_payment": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "slow_drain": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "structuring": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "takeover_attempt": {
+        "kind": "fraud",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 4
+      },
+      "business_payroll": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "family_landline": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "forgot_password": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "household_device": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "loan_paid_to_supplier": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 4,
+        "high": 0
+      },
+      "merchant_collection": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "new_phone": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "office_colleagues": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "own_account_sweep": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "regular_large_payment": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "seasonal_return": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 0,
+        "high": 0
+      },
+      "shopping_spree": {
+        "kind": "lookalike",
+        "total": 4,
+        "medium_plus": 1,
+        "high": 0
+      }
+    }
+  },
+  "rules_version": "d88c05508daf",
+  "fixture_correction": "Independent family_landline incidents now use distinct phones; improvement is not credited to detector tuning."
+}

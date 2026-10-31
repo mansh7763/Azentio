@@ -71,7 +71,9 @@ def transfer_signals(ds: Dataset, cfg: RulesConfig, profiles: pd.DataFrame) -> l
     outbound = txns[[not is_inbound(k) for k in kinds]]
     # Per customer, in seq order (which is time order after prepare): a window ending at a transaction is a
     # contiguous slice found by binary search, instead of filtering the customer's frame for every transaction.
-    first_flag = profiles["is_first_payment"].to_dict()
+    # TX-05 counts a payee as new only when the customer has min_history earlier payments (TX-03's rule): at the
+    # start of a file every payee is "first", which says nothing (evaluation D2: 9 background false alarms).
+    new_flag = profiles["is_new_payee"].to_dict()
     by_customer = {}
     for cid, g in outbound.groupby("customer_id"):
         g = g.sort_values("seq")
@@ -110,7 +112,7 @@ def transfer_signals(ds: Dataset, cfg: RulesConfig, profiles: pd.DataFrame) -> l
 
         if cfg.enabled("TX-05"):
             start = bisect_left(times, t["timestamp"] - fan_window, 0, end)
-            first = [i for i in range(start, end) if first_flag[tids[i]] is True]
+            first = [i for i in range(start, end) if new_flag[tids[i]] is True]
             payees = len({payees_of[i] for i in first})
             if payees >= p5.get("new_payees", 4):
                 hours = int(fan_window.total_seconds() // 3600)
