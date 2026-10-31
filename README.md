@@ -4,6 +4,12 @@ FinShield is our **Digital Fraud Investigation System** for the Azentio.ai hacka
 
 Judges' brief: `Docs/FinShield_Judges_Brief.pdf` · Stage 1 deck: `Docs/FinShield_Stage1_Presentation.html`
 
+## Demo video (4:30)
+
+[![Watch the FinShield demo: ingestion, explainable detection, consolidated cases, network and AI agents](Docs/FinShield_Demo_Video_thumb.png)](https://github.com/mansh7763/Azentio/raw/main/Docs/FinShield_Demo_Video.mp4)
+
+Click the image to play `Docs/FinShield_Demo_Video.mp4`: a live walkthrough on a fresh database with AI voice-over and captions, covering upload and validation, detection, explainable scores, prioritised and consolidated cases, analyst actions, Ask FinShield, split, the relationship network and Pattern Scout.
+
 ## What it does
 
 **Level 1 — detect, analyse and flag**
