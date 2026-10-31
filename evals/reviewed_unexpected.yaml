@@ -1,0 +1,24 @@
+# Medium/High golden alerts that no scenario in expected.yaml asserts, each reviewed with a reason.
+# The scorecard fails on any Medium/High alert that is neither asserted nor listed here, so new unexplained
+# alerts cannot slip in. Keys are primary entity IDs.
+
+BURST-C004-L-C004-F0: >-
+  LG-T7 context. Failed logins from a new device after the large transfer: a partial takeover pattern,
+  capped at Medium (55) because no money moved after the login. As designed.
+
+T-C006-F0: &burst >-
+  TX-T2 velocity burst. Each transfer is scored on its own: early ones are a large amount to a new payee
+  (Medium), later ones add velocity (High). Correct per transaction, but one burst opens several cases;
+  see the case-grouping finding in issue #6 (incident grouping by customer + window).
+T-C006-F1: *burst
+T-C006-F2: *burst
+T-C006-F3: *burst
+T-C006-F4: *burst
+
+T-C021-PAY0-3: &payroll >-
+  G5 payroll, first months. A legitimate business paying staff monthly shows Medium until MT-RECUR has
+  3 earlier payments to each employee (cold start); from the fourth month it is Low. Known cold-start
+  limitation, reported separately in the evaluation (baseline_source != customer).
+T-C021-PAY0-4: *payroll
+T-C021-PAY1-4: *payroll
+T-C021-PAY2-4: *payroll

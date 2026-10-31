@@ -1,0 +1,527 @@
+{
+  "note": "Hand-built calibration scenarios, written alongside the rules. They show the rules behave as designed; they are not an accuracy measurement.",
+  "run_id": "RUN-56f2b6a80b",
+  "rules_version": "1b9277a88059",
+  "passed": 34,
+  "total": 34,
+  "by_kind": {
+    "must flag": {
+      "passed": 7,
+      "total": 7
+    },
+    "capped": {
+      "passed": 8,
+      "total": 8
+    },
+    "lookalike, must stay Low": {
+      "passed": 15,
+      "total": 15
+    },
+    "must stay silent": {
+      "passed": 4,
+      "total": 4
+    }
+  },
+  "rows": [
+    {
+      "id": "LK-T5",
+      "kind": "lookalike, must stay Low",
+      "unit": "transaction",
+      "entity": "T-C001-NEW",
+      "expected": "<= Low",
+      "score": null,
+      "band": "none",
+      "passed": true,
+      "problem": "",
+      "top": []
+    },
+    {
+      "id": "LK-T7-M0",
+      "kind": "lookalike, must stay Low",
+      "unit": "transaction",
+      "entity": "T-C001-M0",
+      "expected": "<= Low",
+      "score": null,
+      "band": "none",
+      "passed": true,
+      "problem": "",
+      "top": []
+    },
+    {
+      "id": "LK-T7-M1",
+      "kind": "lookalike, must stay Low",
+      "unit": "transaction",
+      "entity": "T-C001-M1",
+      "expected": "<= Low",
+      "score": 22,
+      "band": "Low",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "TX-01 +22"
+      ]
+    },
+    {
+      "id": "LK-T7-M2",
+      "kind": "lookalike, must stay Low",
+      "unit": "transaction",
+      "entity": "T-C001-M2",
+      "expected": "<= Low",
+      "score": 22,
+      "band": "Low",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "TX-01 +22"
+      ]
+    },
+    {
+      "id": "LK-T7-M3",
+      "kind": "lookalike, must stay Low",
+      "unit": "transaction",
+      "entity": "T-C001-M3",
+      "expected": "<= Low",
+      "score": 4,
+      "band": "Low",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "TX-01 +23",
+        "MT-PAYEE -10",
+        "MT-RECUR -7"
+      ]
+    },
+    {
+      "id": "LK-T7-M4",
+      "kind": "lookalike, must stay Low",
+      "unit": "transaction",
+      "entity": "T-C001-M4",
+      "expected": "<= Low",
+      "score": 4,
+      "band": "Low",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "TX-01 +23",
+        "MT-PAYEE -10",
+        "MT-RECUR -7"
+      ]
+    },
+    {
+      "id": "LK-T6",
+      "kind": "must flag",
+      "unit": "transaction",
+      "entity": "T-C002-ATO",
+      "expected": "High",
+      "score": 85,
+      "band": "High",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "CHAIN:ato_full +33",
+        "LG-02 +31",
+        "DV-03 +21"
+      ]
+    },
+    {
+      "id": "LG-T6",
+      "kind": "capped",
+      "unit": "login_burst",
+      "entity": "",
+      "expected": "<= Medium",
+      "score": 55,
+      "band": "Medium",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "LG-02 +30",
+        "DV-03 +21",
+        "CHAIN:ato_partial +4"
+      ]
+    },
+    {
+      "id": "LG-T7",
+      "kind": "capped",
+      "unit": "transaction",
+      "entity": "T-C004-BIG",
+      "expected": "<= Medium",
+      "score": 45,
+      "band": "Medium",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "TX-01 +45"
+      ]
+    },
+    {
+      "id": "TX-T1",
+      "kind": "must flag",
+      "unit": "transaction",
+      "entity": "T-C005-BIG",
+      "expected": ">= Medium",
+      "score": 59,
+      "band": "Medium",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "TX-01 +40",
+        "TX-03 +19"
+      ]
+    },
+    {
+      "id": "TX-T2",
+      "kind": "must flag",
+      "unit": "transaction",
+      "entity": "T-C006-F5",
+      "expected": "High",
+      "score": 80,
+      "band": "High",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "TX-05 +29",
+        "TX-01 +26",
+        "TX-04 +25"
+      ]
+    },
+    {
+      "id": "TX-T4",
+      "kind": "must stay silent",
+      "unit": "transaction",
+      "entity": "T-C007-EMI",
+      "expected": "no alert",
+      "score": null,
+      "band": "none",
+      "passed": true,
+      "problem": "",
+      "top": []
+    },
+    {
+      "id": "DV-T2",
+      "kind": "lookalike, must stay Low",
+      "unit": "device_cluster",
+      "entity": "DEV-HOME",
+      "expected": "<= Low",
+      "score": 18,
+      "band": "Low",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "DV-01 +45",
+        "MT-HOUSE -27"
+      ]
+    },
+    {
+      "id": "AP-T1-C011",
+      "kind": "must flag",
+      "unit": "application",
+      "entity": "APP-C011",
+      "expected": "High",
+      "score": 80,
+      "band": "High",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "AP-01 +40",
+        "ID-01 +22",
+        "AP-02 +18"
+      ]
+    },
+    {
+      "id": "AP-T1-C012",
+      "kind": "must flag",
+      "unit": "application",
+      "entity": "APP-C012",
+      "expected": "High",
+      "score": 80,
+      "band": "High",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "AP-01 +40",
+        "ID-01 +22",
+        "AP-02 +18"
+      ]
+    },
+    {
+      "id": "AP-T1-early-C010",
+      "kind": "capped",
+      "unit": "application",
+      "entity": "APP-C010",
+      "expected": "<= Medium",
+      "score": null,
+      "band": "none",
+      "passed": true,
+      "problem": "",
+      "top": []
+    },
+    {
+      "id": "AP-T1-early-C013",
+      "kind": "capped",
+      "unit": "application",
+      "entity": "APP-C013",
+      "expected": "<= Medium",
+      "score": 35,
+      "band": "Low",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "ID-01 +35"
+      ]
+    },
+    {
+      "id": "DV-T1",
+      "kind": "must flag",
+      "unit": "device_cluster",
+      "entity": "DEV-RING",
+      "expected": "High",
+      "score": 72,
+      "band": "High",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "DV-02 +38",
+        "DV-01 +34"
+      ]
+    },
+    {
+      "id": "G7-C016",
+      "kind": "lookalike, must stay Low",
+      "unit": "application",
+      "entity": "APP-C016",
+      "expected": "<= Low",
+      "score": null,
+      "band": "none",
+      "passed": true,
+      "problem": "",
+      "top": []
+    },
+    {
+      "id": "G7-C017",
+      "kind": "lookalike, must stay Low",
+      "unit": "application",
+      "entity": "APP-C017",
+      "expected": "<= Low",
+      "score": null,
+      "band": "none",
+      "passed": true,
+      "problem": "",
+      "top": []
+    },
+    {
+      "id": "G7-C018",
+      "kind": "lookalike, must stay Low",
+      "unit": "application",
+      "entity": "APP-C018",
+      "expected": "<= Low",
+      "score": null,
+      "band": "none",
+      "passed": true,
+      "problem": "",
+      "top": []
+    },
+    {
+      "id": "G3-usual-device",
+      "kind": "lookalike, must stay Low",
+      "unit": "transaction",
+      "entity": "T-C019-RENT",
+      "expected": "<= Low",
+      "score": 10,
+      "band": "Low",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "LG-02 +35",
+        "MT-PAYEE -18",
+        "MT-KNOWN -4"
+      ]
+    },
+    {
+      "id": "LG-T8",
+      "kind": "capped",
+      "unit": "login_burst",
+      "entity": "",
+      "expected": "<= Medium",
+      "score": 30,
+      "band": "Low",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "LG-01 +30"
+      ]
+    },
+    {
+      "id": "LK-T2-salary",
+      "kind": "must stay silent",
+      "unit": "transaction",
+      "entity": "T-C022-SAL6",
+      "expected": "no alert",
+      "score": null,
+      "band": "none",
+      "passed": true,
+      "problem": "",
+      "top": []
+    },
+    {
+      "id": "LK-T2-rent",
+      "kind": "lookalike, must stay Low",
+      "unit": "transaction",
+      "entity": "T-C022-RENT6",
+      "expected": "<= Low",
+      "score": null,
+      "band": "none",
+      "passed": true,
+      "problem": "",
+      "top": []
+    },
+    {
+      "id": "LK-T3",
+      "kind": "lookalike, must stay Low",
+      "unit": "transaction",
+      "entity": "T-C023-TRIP",
+      "expected": "<= Low",
+      "score": null,
+      "band": "none",
+      "passed": true,
+      "problem": "",
+      "top": []
+    },
+    {
+      "id": "LK-T4-0",
+      "kind": "capped",
+      "unit": "transaction",
+      "entity": "T-C024-FEST0",
+      "expected": "<= Medium",
+      "score": 45,
+      "band": "Medium",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "TX-01 +45"
+      ]
+    },
+    {
+      "id": "LK-T4-1",
+      "kind": "capped",
+      "unit": "transaction",
+      "entity": "T-C024-FEST1",
+      "expected": "<= Medium",
+      "score": 43,
+      "band": "Medium",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "TX-01 +43"
+      ]
+    },
+    {
+      "id": "LK-T4-2",
+      "kind": "capped",
+      "unit": "transaction",
+      "entity": "T-C024-FEST2",
+      "expected": "<= Medium",
+      "score": 33,
+      "band": "Low",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "TX-01 +33"
+      ]
+    },
+    {
+      "id": "AP-T2-0",
+      "kind": "must stay silent",
+      "unit": "application",
+      "entity": "APP-C025-0",
+      "expected": "no alert",
+      "score": null,
+      "band": "none",
+      "passed": true,
+      "problem": "",
+      "top": []
+    },
+    {
+      "id": "AP-T2-1",
+      "kind": "must stay silent",
+      "unit": "application",
+      "entity": "APP-C025-1",
+      "expected": "no alert",
+      "score": null,
+      "band": "none",
+      "passed": true,
+      "problem": "",
+      "top": []
+    },
+    {
+      "id": "G5-payroll",
+      "kind": "lookalike, must stay Low",
+      "unit": "transaction",
+      "entity": "T-C021-PAY6-4",
+      "expected": "<= Low",
+      "score": 7,
+      "band": "Low",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "TX-04 +40",
+        "MT-PAYEE -17",
+        "MT-RECUR -13"
+      ]
+    },
+    {
+      "id": "G12-mule",
+      "kind": "must flag",
+      "unit": "transaction",
+      "entity": "T-C011-OUT2",
+      "expected": "High",
+      "score": 80,
+      "band": "High",
+      "passed": true,
+      "problem": "",
+      "top": [
+        "AP-03 +50",
+        "CHAIN:loan_mule +30"
+      ]
+    },
+    {
+      "id": "G12-benign",
+      "kind": "lookalike, must stay Low",
+      "unit": "transaction",
+      "entity": "T-C016-SUP",
+      "expected": "<= Low",
+      "score": null,
+      "band": "none",
+      "passed": true,
+      "problem": "",
+      "top": []
+    }
+  ],
+  "unexpected_alerts": {
+    "total": 25,
+    "medium_or_high": [
+      "BURST-C004-L-C004-F0 (Medium 55)",
+      "T-C006-F0 (Medium 59)",
+      "T-C006-F1 (Medium 59)",
+      "T-C006-F2 (Medium 59)",
+      "T-C006-F3 (High 70)",
+      "T-C006-F4 (High 82)",
+      "T-C021-PAY0-3 (Medium 45)",
+      "T-C021-PAY0-4 (Medium 67)",
+      "T-C021-PAY1-4 (Medium 40)",
+      "T-C021-PAY2-4 (Medium 40)"
+    ],
+    "unreviewed": [],
+    "reviewed": {
+      "T-C021-PAY0-3": "G5 payroll, first months. A legitimate business paying staff monthly shows Medium until MT-RECUR has 3 earlier payments to each employee (cold start); from the fourth month it is Low. Known cold-start limitation, reported separately in the evaluation (baseline_source != customer).",
+      "T-C021-PAY0-4": "G5 payroll, first months. A legitimate business paying staff monthly shows Medium until MT-RECUR has 3 earlier payments to each employee (cold start); from the fourth month it is Low. Known cold-start limitation, reported separately in the evaluation (baseline_source != customer).",
+      "T-C021-PAY1-4": "G5 payroll, first months. A legitimate business paying staff monthly shows Medium until MT-RECUR has 3 earlier payments to each employee (cold start); from the fourth month it is Low. Known cold-start limitation, reported separately in the evaluation (baseline_source != customer).",
+      "T-C021-PAY2-4": "G5 payroll, first months. A legitimate business paying staff monthly shows Medium until MT-RECUR has 3 earlier payments to each employee (cold start); from the fourth month it is Low. Known cold-start limitation, reported separately in the evaluation (baseline_source != customer).",
+      "BURST-C004-L-C004-F0": "LG-T7 context. Failed logins from a new device after the large transfer: a partial takeover pattern, capped at Medium (55) because no money moved after the login. As designed.",
+      "T-C006-F0": "TX-T2 velocity burst. Each transfer is scored on its own: early ones are a large amount to a new payee (Medium), later ones add velocity (High). Correct per transaction, but one burst opens several cases; see the case-grouping finding in issue #6 (incident grouping by customer + window).",
+      "T-C006-F1": "TX-T2 velocity burst. Each transfer is scored on its own: early ones are a large amount to a new payee (Medium), later ones add velocity (High). Correct per transaction, but one burst opens several cases; see the case-grouping finding in issue #6 (incident grouping by customer + window).",
+      "T-C006-F2": "TX-T2 velocity burst. Each transfer is scored on its own: early ones are a large amount to a new payee (Medium), later ones add velocity (High). Correct per transaction, but one burst opens several cases; see the case-grouping finding in issue #6 (incident grouping by customer + window).",
+      "T-C006-F3": "TX-T2 velocity burst. Each transfer is scored on its own: early ones are a large amount to a new payee (Medium), later ones add velocity (High). Correct per transaction, but one burst opens several cases; see the case-grouping finding in issue #6 (incident grouping by customer + window).",
+      "T-C006-F4": "TX-T2 velocity burst. Each transfer is scored on its own: early ones are a large amount to a new payee (Medium), later ones add velocity (High). Correct per transaction, but one burst opens several cases; see the case-grouping finding in issue #6 (incident grouping by customer + window)."
+    }
+  }
+}
