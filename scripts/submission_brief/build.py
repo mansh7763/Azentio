@@ -290,19 +290,19 @@ page("SCALABILITY", "Built and measured today, and the production path we would 
 <li><b>Stable incident keys.</b> A case follows the same incident across runs; pinned splits are never undone.</li>
 <li><b>Rules as versioned config.</b> One file, hashed to a version; a change creates a new version and old alerts stay as history.</li>
 <li><b>Separable stages.</b> Signal collection and scoring are separate functions, so variants can be re-scored without recomputation.</li>
-<li><b>State in the database.</b> Pagination on lists; storage chosen by DATABASE_URL.</li>
+<li><b>State in the database.</b> Pagination on lists; storage chosen by DATABASE_URL (SQLite or Postgres); alerts and audit events locked by database triggers.</li>
 <li><b>Bounded graph and AI cost.</b> Hub nodes capped; assistant context capped; LLM calls time-limited with a deterministic fallback.</li>
 </ul></div>
 <div class="box path"><h3>Production path (designed, not built)</h3>
 <ul>
-<li><b>Storage.</b> Move from SQLite to Postgres through the same SQLAlchemy models; add indexes on entity and time.</li>
+<li><b>Storage.</b> Postgres URLs and immutability triggers are already supported; next: validate at volume and add indexes on entity and time.</li>
 <li><b>Workers.</b> Run detection as background jobs per tenant and per window instead of in the request.</li>
 <li><b>Streaming.</b> Incremental ingestion with windowed re-scoring for real-time alerts.</li>
 <li><b>Identity.</b> Login, roles and four-eyes approval before any account-affecting action is allowed.</li>
 <li><b>Feedback loop.</b> Analyst outcomes retrain the shadow model; approved Pattern Scout suggestions become tested rules through a rule editor.</li>
 <li><b>Observability.</b> Per-stage timings, alert-volume and drift dashboards.</li>
 </ul>
-<p class="note">Not yet tested: Postgres, multi-user concurrency, or volumes beyond the synthetic sets.</p></div>
+<p class="note">Not yet tested: Postgres under load, multi-user concurrency, or volumes beyond the synthetic sets.</p></div>
 </div>
 {src("git history (perf commit d666d6a), backend/app/api/alert_store.py, backend/app/config.py, backend/app/detect/config.py")}''', tag="Design patterns")
 

@@ -30,6 +30,8 @@ Azentio.ai Hackathon · Digital Fraud Investigation System · Level 1 + Level 2
 
 Click the image to play `Docs/FinShield_Demo_Video.mp4`: a live walkthrough on a fresh database with AI voice-over and captions, covering upload and validation, detection, explainable scores, prioritised and consolidated cases, analyst actions, Ask FinShield, split, the relationship network and Pattern Scout.
 
+**Watch on Google Drive:** [FinShield demo video](https://drive.google.com/file/d/12htrC4Xv4CAtlDFEFj4mSNbBtaYrdr5l/view?usp=sharing)
+
 ## See it
 
 <table>
@@ -172,9 +174,12 @@ Sources: `evals/reports/d3_heldout.md`, `golden_scorecard.md`, `ml_stability.md`
 - Idempotent runs: the run ID is derived from data and rules, so re-running the same inputs reuses the stored run.
 - Stable incident keys: a case follows the same incident across runs; pinned splits are never undone.
 - Rules are versioned config; a change creates a new version and old alerts stay as history.
+- Alerts and audit events are protected by database triggers that refuse UPDATE and DELETE (SQLite and Postgres).
 - Pagination on lists; storage chosen by `DATABASE_URL`; hub nodes, assistant context and LLM calls are bounded.
 
-**Production path (designed, not built).** Postgres through the same models, background workers per tenant and window, streaming ingestion, login with roles and four-eyes approval, an analyst feedback loop that retrains the shadow model, and a rule editor for approved Pattern Scout suggestions. Not yet tested: Postgres, multi-user concurrency, volumes beyond the synthetic sets.
+**Deployment.** Hosted Postgres URLs are accepted and the immutability triggers exist for Postgres, with a Render blueprint (`render.yaml`) for the API; we have not load-tested Postgres.
+
+**Production path (designed, not built).** Background workers per tenant and window, streaming ingestion, login with roles and four-eyes approval, an analyst feedback loop that retrains the shadow model, and a rule editor for approved Pattern Scout suggestions. Not yet tested: multi-user concurrency, volumes beyond the synthetic sets.
 
 | Risk | Mitigation |
 | --- | --- |
@@ -189,6 +194,7 @@ Sources: `evals/reports/d3_heldout.md`, `golden_scorecard.md`, `ml_stability.md`
 | Re-run undoes a split | Split incidents are pinned |
 | Mixed currencies summed | Exposure kept per currency |
 | Weak evidence ranked first | Single-fact cases capped below top and marked needs review |
+| Tampering with alerts or the audit trail | Database triggers refuse UPDATE and DELETE on alerts and case events |
 | Tuning on the data we report | Reported on seeds never used for tuning |
 
 ## Run it
