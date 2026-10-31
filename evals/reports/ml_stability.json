@@ -1,0 +1,430 @@
+{
+  "note": "Synthetic labelled data (evals/generate.py). The model learns how much each existing rule should count on simulated scenarios; it is a calibration of the rules, not a fraud probability and not real-world accuracy.",
+  "train_seeds": [
+    2,
+    6,
+    7
+  ],
+  "test_seeds": [
+    4,
+    5,
+    8
+  ],
+  "training": "pooled seeds [2, 6, 7] (3097 units, 512 fraud, 272 incidents)",
+  "bootstraps": 50,
+  "summary": {
+    "ap_hand": {
+      "mean": 0.78,
+      "min": 0.777,
+      "max": 0.785
+    },
+    "ap_learned": {
+      "mean": 0.952,
+      "min": 0.949,
+      "max": 0.954
+    },
+    "hand_recall_medium_plus": {
+      "mean": 0.893,
+      "min": 0.875,
+      "max": 0.911
+    },
+    "learned_recall_medium_plus": {
+      "mean": 0.893,
+      "min": 0.875,
+      "max": 0.911
+    },
+    "hand_recall_high": {
+      "mean": 0.542,
+      "min": 0.536,
+      "max": 0.554
+    },
+    "learned_recall_high": {
+      "mean": 0.512,
+      "min": 0.482,
+      "max": 0.554
+    },
+    "hand_lookalike_fp_medium_plus": {
+      "mean": 0.104,
+      "min": 0.083,
+      "max": 0.125
+    },
+    "learned_lookalike_fp_medium_plus": {
+      "mean": 0.083,
+      "min": 0.083,
+      "max": 0.083
+    },
+    "hand_precision_medium_plus": {
+      "mean": 0.756,
+      "min": 0.728,
+      "max": 0.782
+    },
+    "learned_precision_medium_plus": {
+      "mean": 0.876,
+      "min": 0.853,
+      "max": 0.899
+    },
+    "hand_background_flags_medium_plus": {
+      "mean": 35.0,
+      "min": 29.0,
+      "max": 41.0
+    },
+    "learned_background_flags_medium_plus": {
+      "mean": 16.667,
+      "min": 12.0,
+      "max": 21.0
+    },
+    "hand_alerts_medium_plus_per_1k_events": {
+      "mean": 5.857,
+      "min": 5.56,
+      "max": 6.17
+    },
+    "learned_alerts_medium_plus_per_1k_events": {
+      "mean": 5.927,
+      "min": 5.66,
+      "max": 6.07
+    }
+  },
+  "per_seed": [
+    {
+      "seed": 4,
+      "units": 1018,
+      "fraud_units": 169,
+      "ap_hand": 0.784626904009177,
+      "ap_learned": 0.9485206952052283,
+      "hand": {
+        "recall_medium_plus": 0.893,
+        "recall_high": 0.554,
+        "lookalike_fp_medium_plus": 0.125,
+        "precision_medium_plus": 0.728,
+        "background_flags_medium_plus": 41,
+        "alerts_medium_plus_per_1k_events": 6.17
+      },
+      "learned": {
+        "recall_medium_plus": 0.893,
+        "recall_high": 0.554,
+        "lookalike_fp_medium_plus": 0.083,
+        "precision_medium_plus": 0.853,
+        "background_flags_medium_plus": 21,
+        "alerts_medium_plus_per_1k_events": 6.07
+      }
+    },
+    {
+      "seed": 5,
+      "units": 1066,
+      "fraud_units": 172,
+      "ap_hand": 0.7791030876661221,
+      "ap_learned": 0.9533951018651405,
+      "hand": {
+        "recall_medium_plus": 0.911,
+        "recall_high": 0.536,
+        "lookalike_fp_medium_plus": 0.104,
+        "precision_medium_plus": 0.782,
+        "background_flags_medium_plus": 29,
+        "alerts_medium_plus_per_1k_events": 5.56
+      },
+      "learned": {
+        "recall_medium_plus": 0.911,
+        "recall_high": 0.5,
+        "lookalike_fp_medium_plus": 0.083,
+        "precision_medium_plus": 0.899,
+        "background_flags_medium_plus": 12,
+        "alerts_medium_plus_per_1k_events": 5.66
+      }
+    },
+    {
+      "seed": 8,
+      "units": 1037,
+      "fraud_units": 174,
+      "ap_hand": 0.7774406932048359,
+      "ap_learned": 0.9536324814934332,
+      "hand": {
+        "recall_medium_plus": 0.875,
+        "recall_high": 0.536,
+        "lookalike_fp_medium_plus": 0.083,
+        "precision_medium_plus": 0.759,
+        "background_flags_medium_plus": 35,
+        "alerts_medium_plus_per_1k_events": 5.84
+      },
+      "learned": {
+        "recall_medium_plus": 0.875,
+        "recall_high": 0.482,
+        "lookalike_fp_medium_plus": 0.083,
+        "precision_medium_plus": 0.875,
+        "background_flags_medium_plus": 17,
+        "alerts_medium_plus_per_1k_events": 6.05
+      }
+    }
+  ],
+  "multipliers": [
+    {
+      "rule": "MT-KNOWN",
+      "multiplier": 1.53,
+      "p5": 1.47,
+      "p95": 1.58,
+      "units": 1396,
+      "incidents_or_units": 1387,
+      "verdict": "stronger than hand weight"
+    },
+    {
+      "rule": "MT-TENURE",
+      "multiplier": 1.33,
+      "p5": 1.25,
+      "p95": 1.4,
+      "units": 2905,
+      "incidents_or_units": 2106,
+      "verdict": "stronger than hand weight"
+    },
+    {
+      "rule": "TX-01",
+      "multiplier": 1.3,
+      "p5": 1.22,
+      "p95": 1.37,
+      "units": 1009,
+      "incidents_or_units": 302,
+      "verdict": "stronger than hand weight"
+    },
+    {
+      "rule": "TX-03",
+      "multiplier": 1.24,
+      "p5": 1.15,
+      "p95": 1.31,
+      "units": 1509,
+      "incidents_or_units": 1232,
+      "verdict": "stronger than hand weight"
+    },
+    {
+      "rule": "MT-RECUR",
+      "multiplier": 1.2,
+      "p5": 1.14,
+      "p95": 1.25,
+      "units": 561,
+      "incidents_or_units": 38,
+      "verdict": "stronger than hand weight"
+    },
+    {
+      "rule": "MT-OWN",
+      "multiplier": 1.13,
+      "p5": 1.09,
+      "p95": 1.18,
+      "units": 36,
+      "incidents_or_units": 12,
+      "verdict": "stronger than hand weight"
+    },
+    {
+      "rule": "MT-PAYEE",
+      "multiplier": 1.12,
+      "p5": 1.1,
+      "p95": 1.15,
+      "units": 596,
+      "incidents_or_units": 130,
+      "verdict": "stronger than hand weight"
+    },
+    {
+      "rule": "AP-04",
+      "multiplier": 1.1,
+      "p5": 1.05,
+      "p95": 1.14,
+      "units": 17,
+      "incidents_or_units": 12,
+      "verdict": "stronger than hand weight"
+    },
+    {
+      "rule": "ID-01",
+      "multiplier": 1.09,
+      "p5": 1.04,
+      "p95": 1.12,
+      "units": 39,
+      "incidents_or_units": 12,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "ID-02",
+      "multiplier": 1.08,
+      "p5": 1.05,
+      "p95": 1.11,
+      "units": 12,
+      "incidents_or_units": 12,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "TX-08",
+      "multiplier": 1.05,
+      "p5": 1.02,
+      "p95": 1.07,
+      "units": 22,
+      "incidents_or_units": 12,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "DV-02",
+      "multiplier": 1.02,
+      "p5": 1.01,
+      "p95": 1.03,
+      "units": 17,
+      "incidents_or_units": 17,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "MT-HOUSE",
+      "multiplier": 1.02,
+      "p5": 1.01,
+      "p95": 1.03,
+      "units": 12,
+      "incidents_or_units": 12,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "TX-09",
+      "multiplier": 1.02,
+      "p5": 1.01,
+      "p95": 1.03,
+      "units": 27,
+      "incidents_or_units": 27,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "AP-01",
+      "multiplier": 1.01,
+      "p5": 1.01,
+      "p95": 1.02,
+      "units": 27,
+      "incidents_or_units": 12,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "AP-02",
+      "multiplier": 1.01,
+      "p5": 1.0,
+      "p95": 1.01,
+      "units": 27,
+      "incidents_or_units": 12,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "DV-01",
+      "multiplier": 1.01,
+      "p5": 1.0,
+      "p95": 1.02,
+      "units": 29,
+      "incidents_or_units": 29,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "NW-02",
+      "multiplier": 1.01,
+      "p5": 1.0,
+      "p95": 1.01,
+      "units": 12,
+      "incidents_or_units": 12,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "AP-03",
+      "multiplier": 1.0,
+      "p5": 1.0,
+      "p95": 1.0,
+      "units": 5,
+      "incidents_or_units": 5,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "CHAIN_FLOOR",
+      "multiplier": 1.0,
+      "p5": 1.0,
+      "p95": 1.0,
+      "units": 24,
+      "incidents_or_units": 24,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "HV-01",
+      "multiplier": 1.0,
+      "p5": 1.0,
+      "p95": 1.0,
+      "units": 0,
+      "incidents_or_units": 0,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "LG-03",
+      "multiplier": 1.0,
+      "p5": 1.0,
+      "p95": 1.0,
+      "units": 12,
+      "incidents_or_units": 12,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "TX-05",
+      "multiplier": 1.0,
+      "p5": 0.98,
+      "p95": 1.01,
+      "units": 63,
+      "incidents_or_units": 34,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "DV-03",
+      "multiplier": 0.99,
+      "p5": 0.98,
+      "p95": 0.99,
+      "units": 36,
+      "incidents_or_units": 36,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "LG-01",
+      "multiplier": 0.99,
+      "p5": 0.99,
+      "p95": 1.0,
+      "units": 31,
+      "incidents_or_units": 31,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "LG-02",
+      "multiplier": 0.99,
+      "p5": 0.99,
+      "p95": 1.0,
+      "units": 36,
+      "incidents_or_units": 36,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "TX-07",
+      "multiplier": 0.99,
+      "p5": 0.98,
+      "p95": 1.0,
+      "units": 4,
+      "incidents_or_units": 4,
+      "verdict": "not distinguishable from hand weight"
+    },
+    {
+      "rule": "TX-06",
+      "multiplier": 0.9,
+      "p5": 0.86,
+      "p95": 0.95,
+      "units": 283,
+      "incidents_or_units": 204,
+      "verdict": "weaker than hand weight"
+    },
+    {
+      "rule": "TX-04",
+      "multiplier": 0.89,
+      "p5": 0.85,
+      "p95": 0.93,
+      "units": 312,
+      "incidents_or_units": 29,
+      "verdict": "weaker than hand weight"
+    },
+    {
+      "rule": "NW-01",
+      "multiplier": 0.58,
+      "p5": 0.54,
+      "p95": 0.62,
+      "units": 542,
+      "incidents_or_units": 533,
+      "verdict": "weaker than hand weight"
+    }
+  ]
+}
