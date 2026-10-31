@@ -54,5 +54,26 @@ POST /api/assistant {question, screen}   -> {answer, citations:[ids], used_llm:b
 POST /api/cases/{id}/actions {action,note,actor}; POST /api/cases/{id}/split {alert_ids,reason}; GET /api/cases/{id}/report
 ```
 
-## Cut order if late (16:40 check)
-1. Pattern Scout LLM text (keep deterministic suggestions) · 2. Split · 3. Markdown report (keep JSON) · 4. Graph animation (keep a table of links). Never cut: consolidation, actions, audit trail, priority, Assistant with LLM-off fallback.
+## Revision 2 — changes from Harsh's review (`Docs/PHASE2_SUGGESTIONS.md`), all accepted
+
+| # | Owner | Change |
+| --- | --- | --- |
+| 1 | A + B | Consolidate by **linked group** (`/api/graph/groups`) **or same customer within 72 h** (not the 30-min chain window), so `APP-C011` (9 Oct) → payout → `T-C011-OUT2` (10 Oct) is one investigation. B provides `consolidate(alerts, groups) -> [{incident_id, alert_ids, entities, reason}]`; A stores `grouping_reason`. |
+| 2 | A | Demo consolidation with the C011 loan chain and the C006 transfers. The ATO story (burst + new device are context on `T-C002-ATO`) is shown in the workspace. |
+| 3 | A | A case may hold several incidents; a split is saved as an override that every re-consolidation respects. |
+| 4 | A + C | New action `reclassify`: keeps original band, new band, reason, user, time. |
+| 5 | A | One table of which actions change case status; `request_info`, `recommend_hold`, `recommend_verification` never touch an account or payment. |
+| 6 | B | Add 2–3 synthetic insurance claims whose payout account is in the loan chain (`A-C011`), link claim → payout in the graph, rebuild demo files. Otherwise say "insurance not shown". |
+| 7 | B + C | Pattern Scout suggestions are saved (suggestion table, stable IDs); Approve/Dismiss stored with actor and note; approving never changes rules; a re-scan keeps decisions. |
+| 8 | C | Assistant receives the route + IDs; the backend loads data from the store, checks citations against it, and treats record text as data, not instructions. |
+| 9 | A + C | `ai_assessment` events only for output tied to a case, marked AI-generated, rejectable by the analyst. |
+| 10 | B | Priority per **case**: `case_priority(alerts)` = highest risk, combined evidence and exposure. |
+| 11 | B | Exposure per currency (`exposure_by_currency`), never summed across currencies. |
+| 12 | B + C | Show **evidence strength** (strong / moderate / weak), not "confidence"; it is not a probability. |
+
+**Before building:** one person edits `schemas.py` (case statuses/event types change; everyone pulls after). Case tables change and are not migrated: **delete `backend/fraud.db` after pulling**. Reviewer identity is a typed name until login exists; say so in the demo. Close demo files in Excel (Windows locks them).
+
+## Cut order if late (16:40 check) — revised: the PDF requires Split, not an Assistant
+1. **Never cut:** consolidation with reason, Split, analyst actions (incl. reclassify), audit trail, report download, prioritisation, relationship view (a table of links is an acceptable fallback).
+2. **Then:** Assistant with its LLM-off fallback.
+3. **Cut first:** Pattern Scout's LLM text → Reviewer memory → graph animation.
