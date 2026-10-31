@@ -31,9 +31,11 @@ def test_case_decision_placeholder():
     assert r.status_code == 200 and r.json()["status"] == "False Positive"
 
 
-def test_ingest_placeholder_accepts_file():
-    r = client.post("/api/ingest", files={"file": ("t.csv", b"txn_id,amount\nT1,10\n", "text/csv")})
+def test_ingest_accepts_file():
+    r = client.post("/api/ingest", data={"entity_type": "transactions"},
+                    files={"file": ("t.csv", b"txn_id,amount\nT1,10\n", "text/csv")})
     assert r.status_code == 200 and r.json()["file_name"] == "t.csv"
+    assert r.json()["rejected"] == 1
 
 
 def test_no_public_reset_endpoint():

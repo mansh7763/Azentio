@@ -1,18 +1,17 @@
 """Detection API (workstream B): run detection and read/edit rule settings."""
 
-from pathlib import Path
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from app.db import SessionLocal
 from app.detect.config import load_rules
 from app.detect.dataset import Dataset
 from app.detect.engine import run_detection
+from app.ingest.store import load_frames
 from app.schemas import DetectionResponse
 
 router = APIRouter(tags=["detection"])
 
-GOLDEN = Path(__file__).resolve().parents[2] / "tests" / "golden"
 _overrides: dict = {}  # TODO(A): persist in a rule_override table so edits survive restarts
 
 
@@ -34,8 +33,8 @@ def _merged(extra: dict | None) -> dict:
 
 
 def load_dataset() -> Dataset:
-    # TODO(A): replace with a Dataset built from the database (Dataset.from_frames(...)).
-    return Dataset.from_csv_dir(GOLDEN)
+    with SessionLocal() as session:
+        return Dataset.from_frames(**load_frames(session))
 
 
 @router.post("/detect/run", response_model=DetectionResponse)
