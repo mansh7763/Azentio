@@ -1,11 +1,13 @@
 """Settings read once from the environment (and a local .env, if present)."""
 
 import os
+from pathlib import Path
 from dataclasses import dataclass, field
 
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv()  # nearest .env (backend/)
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")  # repo-root .env; never overrides values already set
 
 
 @dataclass(frozen=True)

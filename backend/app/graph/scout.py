@@ -14,7 +14,7 @@ from app.detect.dataset import Dataset
 from app.graph.builder import build_graph, linked_groups
 from app.schemas import Alert, Band
 
-GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 
 
 def _candidates(ds: Dataset, alerts: list[Alert]) -> list[dict]:
