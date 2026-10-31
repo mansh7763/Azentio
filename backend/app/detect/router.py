@@ -3,6 +3,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from app.api.alert_store import save_run
 from app.db import SessionLocal
 from app.detect.config import load_rules
 from app.detect.dataset import Dataset
@@ -39,7 +40,11 @@ def load_dataset() -> Dataset:
 
 @router.post("/detect/run", response_model=DetectionResponse)
 def run(body: RunRequest | None = None):
+    trial = bool(body and body.rules)  # one-off rules are a what-if: shown, never saved
     result = run_detection(load_dataset(), overrides=_merged(body.rules if body else None))
+    if not trial and result.run.records_processed:
+        with SessionLocal() as session:
+            result = save_run(session, result)
     return DetectionResponse(run=result.run, alerts=result.alerts)
 
 

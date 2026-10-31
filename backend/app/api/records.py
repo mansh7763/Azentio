@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.api import sample_data
+from app.api.alert_store import involves_customer, latest_alerts
 from app.db import get_session
 from app.detect.dataset import TABLES
 from app.ingest.mapping import SCHEMAS, detect_entity
@@ -107,4 +107,4 @@ def customer_360(customer_id: str, session: Session = Depends(get_session)):
     return {"customer": record_dict(customer, "customers") if customer else {"customer_id": customer_id},
             "accounts": accounts, "transactions": [record_dict(t, "transactions") for t in txns],
             "logins": owned("logins"), "applications": owned("applications"), "claims": owned("claims"),
-            "alerts": [a for a in sample_data.ALERTS if a.customer_id == customer_id]}
+            "alerts": [a for a in latest_alerts(session) if involves_customer(a, customer_id)]}

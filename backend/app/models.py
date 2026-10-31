@@ -128,6 +128,56 @@ class ClaimRow(Provenance, Base):
     timestamp: Mapped[datetime | None] = mapped_column(DateTime)
 
 
+class DetectionRunRow(Base):
+    """`sequence` orders completed runs; the highest one is what the dashboard and alert list show."""
+    __tablename__ = "detection_run"
+
+    run_id: Mapped[str] = mapped_column(String, primary_key=True)
+    sequence: Mapped[int] = mapped_column(Integer, index=True)
+    payload: Mapped[dict] = mapped_column(JSON)
+
+
+class AlertRow(Base):
+    """Immutable: SQLite triggers refuse UPDATE and DELETE. A new run writes new rows and keeps the old ones."""
+    __tablename__ = "alert"
+
+    detection_run_id: Mapped[str] = mapped_column(ForeignKey("detection_run.run_id"), primary_key=True)
+    alert_id: Mapped[str] = mapped_column(String, primary_key=True)
+    incident_key: Mapped[str] = mapped_column(String, index=True)
+    payload: Mapped[dict] = mapped_column(JSON)
+
+
+class CaseRow(Base):
+    __tablename__ = "fraud_case"
+
+    case_id: Mapped[str] = mapped_column(String, primary_key=True)
+    incident_key: Mapped[str] = mapped_column(String, unique=True)
+    alert_ids: Mapped[list] = mapped_column(JSON)
+    category: Mapped[str] = mapped_column(String)
+    customer_id: Mapped[str | None] = mapped_column(String, index=True)
+    account_id: Mapped[str | None] = mapped_column(String)
+    score: Mapped[int] = mapped_column(Integer)
+    band: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String)
+    assignee: Mapped[str | None] = mapped_column(String)
+    notes: Mapped[str | None] = mapped_column(String)
+    created_at: Mapped[datetime] = mapped_column(DateTime)
+    updated_at: Mapped[datetime] = mapped_column(DateTime)
+
+
+class CaseEventRow(Base):
+    """Append-only decision log: SQLite triggers refuse UPDATE and DELETE."""
+    __tablename__ = "case_event"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    case_id: Mapped[str] = mapped_column(ForeignKey("fraud_case.case_id"), index=True)
+    at: Mapped[datetime] = mapped_column(DateTime)
+    actor: Mapped[str] = mapped_column(String)
+    from_status: Mapped[str | None] = mapped_column(String)
+    to_status: Mapped[str] = mapped_column(String)
+    note: Mapped[str | None] = mapped_column(String)
+
+
 # Keys match app.detect.dataset.TABLES, so stored tables become detection frames directly.
 ENTITY_MODELS = {
     "customers": CustomerRow, "accounts": AccountRow, "transactions": TransactionRow,

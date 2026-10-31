@@ -12,9 +12,7 @@ def test_health():
 
 @pytest.mark.parametrize("method,path", [
     ("get", "/api/alerts"),
-    ("get", "/api/alerts/ALT-1"),
     ("get", "/api/cases"),
-    ("get", "/api/cases/CASE-1"),
     ("get", "/api/dashboard/summary"),
     ("get", "/api/records/transactions"),
     ("get", "/api/customers/C001/360"),
@@ -24,11 +22,6 @@ def test_health():
 ])
 def test_contract_routes_exist(method, path):
     assert getattr(client, method)(path).status_code == 200
-
-
-def test_case_decision_placeholder():
-    r = client.post("/api/cases/CASE-1/decision", json={"status": "False Positive", "note": "ok"})
-    assert r.status_code == 200 and r.json()["status"] == "False Positive"
 
 
 def test_ingest_accepts_file():
