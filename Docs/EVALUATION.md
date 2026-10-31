@@ -142,6 +142,11 @@ A **detection** = the event gets band Medium or High with the right category. A 
 | LG-T3 | 1 failure (typo) then success from the usual device | No alert |
 | LG-T4 | Failures → success from the usual device, no sensitive action | Low or Medium |
 | LG-T5 | Failures spread over 3 days (not a burst) | No burst signal |
+| LG-T6 | Forgot password: failures → reset → login from a new phone, **no money moved** | Medium or lower; never High |
+| LG-T7 | Large transfer made **before** the failed logins and new-device login | No ATO chain; transfer scored on its own |
+| LG-T8 | One failed-login burst of 6 attempts | **One** alert (login-burst unit), not six |
+| DV-T5 | Device shared by 4 customers, 40 logins | **One** device-cluster alert, not one per login |
+| TX-T8 | Customer with only 2 prior transfers pays a beneficiary for the first time | TX-03 skipped (short history); no "new beneficiary" signal |
 
 ### 3.4 Legitimate lookalikes (the trap)
 
@@ -310,6 +315,8 @@ A **detection** = the event gets band Medium or High with the right category. A 
 | CS-07 | Reversal False Positive → Requires Investigation without a note | rejected; with a note → accepted and logged |
 | CS-08 | Decision log is append-only: 5 decisions → 5 log rows, in order | exact |
 | CS-09 | Re-running detection does not create duplicate cases | exact |
+| CS-11 | Change a rule weight and re-run detection | Dashboard counts come from the latest run only; re-scored alerts attach to their existing case with a "re-scored" log row |
+| CS-12 | Direct SQL `DELETE FROM alert …` | rejected by the trigger (SQLite and Postgres) |
 | CS-10 | Filter cases by status, risk, category | correct |
 
 ### 7.2 Metrics

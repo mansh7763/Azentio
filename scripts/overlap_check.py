@@ -44,10 +44,13 @@ def load_config():
 
 
 def workstream_of(path, config):
+    """Owner of `path`; the longest matching prefix wins, so nested paths can have their own owner."""
+    best_key, best_len = None, -1
     for key, ws in config["workstreams"].items():
-        if any(path == p.rstrip("/") or path.startswith(p) for p in ws["paths"]):
-            return key
-    return None
+        for p in ws["paths"]:
+            if (path == p.rstrip("/") or path.startswith(p)) and len(p) > best_len:
+                best_key, best_len = key, len(p)
+    return best_key
 
 
 def workstream_of_email(email, config):

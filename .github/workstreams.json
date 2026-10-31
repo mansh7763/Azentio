@@ -1,5 +1,5 @@
 {
-  "_comment": "Who owns which paths. Add your git author email under 'members' (run: git config user.email). Paths are prefixes from the repo root.",
+  "_comment": "Who owns which paths. Add your git author email under 'members' (run: git config user.email). Paths are prefixes from the repo root; the longest matching prefix wins, so backend/app/api/dashboard.py belongs to C even though backend/app/api/ belongs to A.",
   "workstreams": {
     "A": {
       "name": "Data platform, cases and API",
@@ -8,7 +8,8 @@
         "backend/app/ingest/",
         "backend/app/models.py",
         "backend/app/api/",
-        "backend/app/datagen/"
+        "backend/app/datagen/",
+        "backend/app/db.py"
       ]
     },
     "B": {
@@ -28,7 +29,8 @@
       "members": [],
       "paths": [
         "frontend/",
-        "backend/app/ai/"
+        "backend/app/ai/",
+        "backend/app/api/dashboard.py"
       ]
     }
   },

@@ -4,7 +4,9 @@ Date: 2026-10-31 · Source: `Docs/ProblemStatement-Stage-1.pdf`
 
 **Bottom line:** Ship Level 1 as one working path, ingest → detect → score → alert → case, by about 14:00. Build it on an explainable, entity-centric risk engine that can grow into the later levels without a rewrite. We win on three things: robust ingestion (hidden tests), explanations that show both why risk went up *and* why it went down (the "legitimate lookalikes" requirement), and an identity graph that reveals coordinated fraud.
 
-**Revision 2 (11:50):** all 19 items in `Docs/suggestions.md` are applied. Each change is marked "(suggestion #N)" where it lands.
+**Revision 2 (11:50):** all 19 items from the first review are applied. Each change is marked "(suggestion #N)" where it lands.
+
+**Revision 3:** all 24 items from the second review in `Docs/suggestions.md` are applied, marked "(review 2 #N)". Main changes: four defined scoring units (3.4), corrected contribution maths, ordered attack chains with a Medium floor when no money moved, latest-run-only dashboard, delete-proof alerts, and a deployment plan (section 8). Item 13 (owner names and emails) is for each teammate to fill in.
 
 ---
 
@@ -102,7 +104,8 @@ The release said institutions use hundreds of parameters. Leading platforms grou
 │ FastAPI backend                                                                                 │
 │                                                                                                 │
 │  [1] Ingestion        [2] Canonical store       [3] Feature & profile     [4] Detection engine  │
-│  CSV/XLSX/JSON  ──▶   SQLite (customers,   ──▶   per-customer baselines ──▶ indicator library    │
+│  CSV/XLSX/JSON  ──▶   SQLite / Postgres    ──▶   per-customer baselines ──▶ indicator library    │
+│                       (customers,                                                               │
 │  header mapping       accounts, txns, logins,    velocity windows           (rules as config)   │
 │  validation           devices, applications,     device/IP stats            + anomaly model     │
 │  quarantine + report  claims)                    identity graph (NetworkX)  + graph detectors   │
@@ -116,6 +119,8 @@ The release said institutions use hundreds of parameters. Leading platforms grou
 ### 3.1 Canonical data model
 
 Every source maps onto these tables. IDs are strings, stored exactly as given.
+
+**Database (review 2 #16):** SQLite locally (each person keeps their own data, and work continues if the venue network fails); **Aiven Postgres when deployed**. One SQLAlchemy codebase, selected by `DATABASE_URL` (`sqlite:///./fraud.db` by default; the Aiven URL needs `sslmode=require`). Write only SQL that works on both, except the immutability triggers (3.5).
 
 | Entity | Key fields | Links |
 | --- | --- | --- |
@@ -149,28 +154,32 @@ Every source maps onto these tables. IDs are strings, stored exactly as given.
 
 ### 3.3 Detection: the indicator library
 
-Each indicator is a small function plus a config entry (`rules.yaml`) with `id`, `name`, `category`, `weight`, `params` and `enabled`. It returns `Signal{indicator_id, entity, score 0–1, reason text, evidence_ids[], direction: risk|mitigating}`. Thresholds live in config and can be edited in the UI. That covers "configurable rules".
+Each indicator is a small function plus a config entry with `id`, `name`, `category`, `weight`, `params` and `enabled`. It returns `Signal{indicator_id, entity, score 0–1, reason text, evidence_ids[], direction: risk|mitigating}`. That covers "configurable rules".
+
+**Where rule config lives (review 2 #18):** `rules.yaml` holds the **defaults only**. Edits made in the UI are saved in the database (`rule_override` table) and applied on top of the defaults, so a restart or redeploy does not lose them. "Reset to defaults" deletes the overrides.
 
 **Point-in-time rule (suggestion #3):** in batch mode, every feature for an event is computed **only from events strictly before it**. The baseline uses earlier, *successful*, *outbound* transactions only. Otherwise a fraudulent transfer inflates its own baseline, and "new beneficiary" would be judged against payments that happen later.
 
+**Short history (review 2 #3):** with point-in-time features, a customer's first beneficiary and first device always look "new", which floods a short dataset with false positives. So TX-03 (new beneficiary) and DV-03 (new device) are **skipped when the customer has fewer than 5 prior events** of that kind, and the **onboarding device** (the first device seen for the customer) is never treated as new.
+
 **Baseline safety (suggestion #4):** the robust z-score denominator is `max(1.4826·MAD, 0.1·median, floor_amount)`. Fixed payments such as rent or EMI have MAD = 0, so this avoids division by zero. Fallback order when the customer's own history is short: customer (≥ 5 prior txns) → peer segment → global baseline.
 
-**High value is separate from unusual (suggestion #1):** `HV-01 high_value` fires on absolute size, either amount ≥ a configurable threshold or ≥ 50 % of the account balance. It is not a risk signal by itself. It exists so the ATO chain can fire even for a customer who *regularly* makes large transfers, where TX-01/02 stay silent.
+**High value is separate from unusual (suggestion #1):** `HV-01 high_value` fires on absolute size, either amount ≥ the high-value threshold or ≥ 50 % of the account balance. It is not a risk signal by itself. It exists so the ATO chain can fire even for a customer who *regularly* makes large transfers, where TX-01/02 stay silent. **The threshold defaults to the p90 of all outbound amounts in the loaded data (review 2 #7)**, so it works for any currency or scale. A fixed value can still be set in config.
 
 | ID | Indicator (scenario) | Logic | Level |
 | --- | --- | --- | --- |
 | TX-01 | Amount far above the customer's own norm | robust z over **prior** successful outbound txns, floored denominator; fallback customer → segment → global | P0 |
 | TX-02 | Amount above the customer's p95 / historical max | amt > prior p95 and > 2× prior median | P0 |
-| TX-03 | New beneficiary | beneficiary never paid by this customer **before this transaction** | P0 |
-| HV-01 | High-value flag (chain input only) | amt ≥ configurable absolute threshold or ≥ 50 % of balance; weight 0 on its own | P0 |
+| TX-03 | New beneficiary | beneficiary never paid by this customer **before this transaction**; skipped when < 5 prior transfers | P0 |
+| HV-01 | High-value flag (chain input only) | amt ≥ p90 of loaded outbound amounts (or a configured value) or ≥ 50 % of balance; weight 0 on its own | P0 |
 | TX-04 | Rapid transfers / velocity | ≥ N transfers or ≥ X total within T minutes (1 h, 24 h windows) | P0 |
 | TX-05 | Fan-out to many new beneficiaries | ≥ k distinct new beneficiaries in 24 h | P0 |
 | TX-06 | Unusual hour | txn hour outside the customer's usual hour band | P1 |
 | TX-07 | Balance drain | transfer ≥ 80 % of the balance | P1 |
 | TX-08 | Structuring | several transfers just under a reporting limit within 7 days | P1 |
 | DV-01 | Device shared by many customers | distinct customers per device ≥ k | P0 |
-| DV-02 | Shared-device relationship assessment | shared surname/address/household → **mitigating**; unrelated identities, different cities, applications or transfers from the shared device → risk | P0 |
-| DV-03 | New device for this customer | device not seen in the customer's history | P0 |
+| DV-02 | Shared-device relationship assessment | shared surname/address/household → **mitigating**; unrelated identities, different cities, applications or transfers from the shared device → risk. **No name or address in the data → neutral result, shown as "relationship assessment unavailable"** (review 2 #8) | P0 |
+| DV-03 | New device for this customer | device not seen in the customer's history; the onboarding device is never new; skipped when < 5 prior logins | P0 |
 | DV-04 | IP shared across many customers / IP-to-location mismatch / impossible travel | geo-distance ÷ time between logins > 900 km/h | P1 |
 | LG-01 | Failed-login burst | ≥ N failures in T minutes | P0 |
 | LG-02 | Failures followed by a success | success within T after the burst → ATO candidate | P0 |
@@ -184,35 +193,55 @@ Each indicator is a small function plus a config entry (`rules.yaml`) with `id`,
 | ML-01 | Multivariate anomaly | Isolation Forest on the transaction feature vector; contributes a **bounded** weight and never alerts alone | P1 |
 | MT-* | **Mitigating factors** (lookalikes) | regular payee (≥ 3 prior payments of similar size), recurring pattern (salary/rent cadence), known device + usual location, long tenure + clean history, household device sharing | P0 |
 
-**Mitigation is suspended during account takeover (suggestion #5):** ATO victims are often long-tenure customers with clean histories and regular payees. When any login signal (LG-01..03 or DV-03) is active for the customer within the chain window, the *tenure*, *regular-payee* and *recurring-pattern* mitigations are switched off. The explanation says so ("Mitigation suspended: suspicious login 14 min earlier").
+**Mitigation is suspended during account takeover (suggestion #5):** ATO victims are often long-tenure customers with clean histories and regular payees. When a **login signal (LG-01..03)** is active for the customer within the chain window, the *tenure*, *regular-payee* and *recurring-pattern* mitigations are switched off. **A new device (DV-03) alone does not suspend them (review 2 #9)**, so a regular payer who just changed phones is not penalised. The explanation says so ("Mitigation suspended: suspicious login 14 min earlier").
 
 **The "hundreds of parameters" story (suggestion #19):** each indicator can run over several time windows (1 h / 24 h / 7 d / 30 d) and dimensions (customer, account, device, IP, beneficiary). The pitch quotes **only the number of features we actually compute**, counted from code by the feature catalogue screen (P1). We don't say "150+" unless the catalogue shows it.
 
 ### 3.4 Risk scoring and explanations
 
+**Scoring units (review 2 #1).** Scoring "every event" would give five alerts for one failed-login burst, and an ATO chain would never land in one score, because the logins and the transfer are separate events. So exactly four things get scored, each producing at most one alert:
+
+| Unit | What it is | Signals it collects |
+| --- | --- | --- |
+| **Transaction** | one outbound transfer | TX-*, HV-01, plus **context**: LG and DV signals for the same customer in the chain window *before* it |
+| **Login burst** | a run of failed logins (and the success that ends it), grouped per customer | LG-01..03, DV-03; only alerted on its own when **no transaction follows** in the window (otherwise it is context on that transaction) |
+| **Device cluster** | one device and all customers seen on it | DV-01, DV-02; one alert per device, not per login |
+| **Application** | one loan application (or one claim, P1) | AP-*, CL-*, plus the device cluster it belongs to |
+
 1. **Combine risk signals** with a noisy-OR, so many weak signals add up while no single one saturates the score:
-   `risk = 1 − Π(1 − wᵢ·sᵢ)` over risk signals, where `wᵢ` is the indicator weight and `sᵢ` its strength (0–1).
+   `risk = 1 − Π(1 − wᵢ·sᵢ)` over risk signals, where `wᵢ` is the indicator weight and `sᵢ` its strength (0–1). Each `wᵢsᵢ` is clamped to at most 0.99 so the log in step 5 never hits ln(0).
 2. **Mitigating signals** damp the score: `damped = risk × Π(1 − mⱼ)` (subject to the ATO suspension in 3.3).
 3. **Attack-chain floors instead of multipliers (suggestion #2):** a multiplier can leave a full chain at Medium (0.4 × 1.5 = 0.6) or push the score past 100. When a known chain is confirmed, the score becomes `max(damped, floor)`, and **mitigation can never take it below the floor**:
-   - ATO chain: `LG-02 + DV-03 + HV-01` (high value, not "unusual") within 24 h → floor **85**
-   - ATO chain, partial: `LG-02 + (DV-03 or LG-03)` → floor **70**
-   - Loan mule chain: `AP-01 + AP-03` → floor **80**
-   A chain is the only "hard rule". There are no other overrides.
+   - ATO chain: failed logins → success (`LG-02`) → new device (`DV-03`) → high-value transfer (`HV-01`), **in that order** (review 2 #6), within 24 h → floor **85**
+   - ATO chain with money or payee movement: `LG-02` → `LG-03` beneficiary change, or a transfer, within 24 h → floor **70**
+   - ATO chain, partial (no money moved): `LG-02` → (`DV-03` or a password reset) → floor **55** (Medium). **High requires a beneficiary change or a transfer (review 2 #4)**, so a real user who forgot their password and logged in from a new phone is not High.
+   - Loan mule chain: `AP-01` → `AP-03`, in that order → floor **80**
+   A chain is the only "hard rule". There are no other overrides. A transfer that happens *before* the suspicious login never completes a chain.
 4. **Scale to 0–100 and band it:** Low < 40, Medium 40–69, High ≥ 70 (configurable).
-5. **Additive explanation (suggestion #6):** noisy-OR is not additive, so each risk signal's share is `cᵢ = −ln(1 − wᵢsᵢ)` and its points are `final × cᵢ / Σc`. Mitigations are shown as the gap between the undamped and damped score, split the same way, and a chain floor appears as its own line ("+23 ATO chain floor"). **The lines always sum exactly to the final score.** This is shown as a **waterfall bar** in the UI, and every line links to its evidence records.
+5. **Additive explanation (suggestion #6, corrected by review 2 #2):** noisy-OR is not additive, so each risk signal's share is `cᵢ = −ln(1 − wᵢsᵢ)`. On the 0–100 scale:
+   - each **risk line** = `undamped × cᵢ / Σc` (these lines sum to the undamped score);
+   - the **mitigation line** = `damped − undamped` (negative; split across mitigating signals by the same log-share method);
+   - the **floor line** = `final − damped` (only when a chain floor lifted the score).
+   Risk lines + mitigation + floor = final, exactly. Rounding is done last, and any rounding remainder goes to the largest line so the displayed integers also sum to the score. This is shown as a **waterfall bar** in the UI, and every line links to its evidence records.
 6. **Entity rollup:** customer risk = max event risk plus a graph uplift from linked risky entities (P1).
 
 The brief's two calibration cases become **unit tests** (suggestion #8):
 - A high-value transfer from a customer who regularly makes similar transfers → **Low** (< 40). Medium would open a case, which is itself a false positive.
 - The same transfer after failed logins and a new-device login → **High** (≥ 70, through the ATO floor).
+- Forgot password: failed logins → reset → login from a new phone, **no money moved** → **Medium or lower** (review 2 #4).
+- A transfer made *before* the failed logins → no chain (review 2 #6).
 - Plus one test per scenario on a small hand-made **golden dataset** (see Workstream B).
 
 ### 3.5 Alerts and cases
 
-- **Every event with at least one risk signal is classified (suggestion #7).** The brief says every detected activity gets a risk classification, so Low results are stored as alerts too and appear in the risk distribution. The alert list **defaults to Medium + High**, with a toggle to show Low, so the queue stays usable.
+- **Every scoring unit with at least one risk signal is classified (suggestion #7; units defined in 3.4).** The brief says every detected activity gets a risk classification, so Low results are stored as alerts too and appear in the risk distribution. The alert list **defaults to Medium + High**, with a toggle to show Low, so the queue stays usable.
 - **Alert** holds: `alert_id`, `detection_run_id`, `dedupe_key`, `event_time` (when the activity happened), `created_at`, event ref, linked entities (via `alert_entities`), category, nullable `product`, detection types, score, band, contributions[], **evidence snapshot (JSON copy of the records)**, rules version.
-- **Immutability is enforced by the database (suggestion #9),** not just the API: a SQLite `BEFORE UPDATE` trigger on `alert` raises an error.
-- **No duplicates on re-run (suggestion #9):** `dedupe_key = hash(indicator set + primary entity + event ids)`. Re-running detection skips an alert whose key exists *with the same rules version*. If the rules changed, a new alert is written under the new `detection_run_id` and the old one stays as history.
+- **Immutability is enforced by the database (suggestion #9, review 2 #5 and #19),** not just the API: `BEFORE UPDATE` **and** `BEFORE DELETE` triggers on `alert` raise an error. The trigger SQL is chosen by `engine.dialect.name`: plain triggers on SQLite, a trigger function + triggers on Postgres.
+- **Demo reset is a separate path (review 2 #5):** `POST /api/admin/reset` drops and recreates the tables (no row deletes), so the triggers never need to be bypassed.
+- **No duplicates on re-run (suggestion #9):** `dedupe_key = hash(scoring unit type + primary entity + event ids)`. Re-running detection with the same rules version skips existing keys.
+- **Rule changes do not double-count (review 2 #5):** if the rules changed, a new alert is written under the new `detection_run_id` and the old one stays as history, but:
+  - the **dashboard and alert list read the latest run only** (older runs are visible in the alert's history);
+  - a new alert whose `dedupe_key` already has a case **attaches to that existing case** instead of opening a new one, and the case log records "re-scored: 62 → 78 under rules v3".
 - **Date filters use `event_time`, not `created_at` (suggestion #10),** so "last 7 days" means when the activity happened, not when we ran detection.
 - **Case** is auto-created for **Medium and High alerts only**, per alert or grouped per customer within 72 h (P1). It holds: `case_id`, alert_ids, category, customer/account, risk, status, assignee, notes.
 - **Statuses can change in any direction (suggestion #11):** `New`, `Requires Investigation`, `False Positive`, `Escalated`, `Confirmed Fraud`, `Closed`. Any status can move to any other, including reversals such as False Positive → Requires Investigation. A note is required for a reversal. Level 1 requires at least Requires Investigation and False Positive.
@@ -237,7 +266,8 @@ The brief's two calibration cases become **unit tests** (suggestion #8):
 | GET | `/api/rules` / PUT `/api/rules/{id}` | B | indicator config (weights, thresholds, enabled) |
 | POST | `/api/rules/simulate` | B | alert counts before/after a config change (P1) |
 | GET | `/api/graph/{entity_id}?depth=2` | B | nodes, edges for the link graph |
-| GET | `/api/dashboard/summary?filters` | C | processed counts, flagged, by band, by category, by detection type, over time (by `event_time`), skipped indicators |
+| GET | `/api/dashboard/summary?filters` | C (file `backend/app/api/dashboard.py`) | latest run only: processed counts, flagged, by band, by category, by detection type, over time (by `event_time`), skipped indicators |
+| POST | `/api/admin/reset` | A | drops and recreates tables, optionally reloads demo data |
 | GET | `/api/alerts?filters` · GET `/api/alerts/{id}` | A | alert list and detail (with contributions and evidence) |
 | POST | `/api/cases` · GET `/api/cases?filters` · GET `/api/cases/{id}` | A | case CRUD |
 | POST | `/api/cases/{id}/decision` | A | appends a decision; returns the case and its log |
@@ -253,7 +283,7 @@ Shared Python types live in `backend/app/schemas.py` (Pydantic): `Signal`, `Cont
 | --- | --- | --- |
 | **P0 — Level 1 (by ~13:45)** | Multi-format ingestion, header mapping, validation, quarantine report | Required; hidden tests |
 | P0 | Canonical model + demo data generator with labelled ground truth | Required; we need data to show |
-| P0 | Indicators TX-01..05, DV-01..03, LG-01..03, AP-01..02, MT-* | The four required scenarios + one extra |
+| P0 | Indicators TX-01..05, HV-01, DV-01..03, LG-01..03, AP-01..02, MT-* | The four required scenarios + one extra; HV-01 feeds the ATO chain (review 2 #12) |
 | P0 | Noisy-OR score, bands, mitigation, contribution list | Required risk assessment |
 | P0 | Dashboard KPIs + 6 filters + alert detail with evidence | Required |
 | P0 | Case queue, decision (Requires Investigation / False Positive), decision log, immutable alert | Required |
@@ -278,7 +308,8 @@ All three are equal in effort: each owns one layer end to end, plus one stretch 
 
 **Mission:** every byte enters cleanly, links correctly and is served to the UI. Owns persistence of alerts and cases.
 
-- **Modules:** `backend/app/ingest/` (parsers, header mapper, validators, quarantine), `backend/app/models.py` (SQLAlchemy), `backend/app/api/` (records, dashboard, alerts, cases), `backend/app/datagen/` (synthetic data generator).
+- **Modules:** `backend/app/ingest/` (parsers, header mapper, validators, quarantine), `backend/app/models.py` (SQLAlchemy), `backend/app/api/` (records, alerts, cases, admin reset — **not** `dashboard.py`, which is C's; review 2 #10), `backend/app/datagen/` (synthetic data generator), `backend/app/db.py` (engine from `DATABASE_URL`, triggers per dialect).
+- **Deployment-ready from the start (review 2 #19, #20):** immutability triggers for SQLite and Postgres; `psycopg` in the backend dependencies; inserts in batches (`executemany` / bulk insert), never row by row; demo data loaded on startup when the database is empty.
 - **Features:**
   1. Canonical schema for the 7 entities + ingestion_batch + alert + alert_entities + case + case_event; the `BEFORE UPDATE` trigger on `alert`.
   2. CSV / XLSX / JSON ingestion read as text, alias + high-confidence fuzzy mapping, `mapping` override, duplicate and conflict handling, hash IDs for logs, data quality report; works on any subset of files. Derive transaction customer and device links (3.1).
@@ -286,12 +317,12 @@ All three are equal in effort: each owns one layer end to end, plus one stretch 
   4. Alert store (insert-only, deduped by key) and case API with reversible statuses and the decision log.
   5. Customer 360 endpoint (P1).
   - *Rebalanced (suggestion #17):* the dashboard summary endpoint moved to C, and B builds its own golden dataset, so B no longer waits on A's generator.
-- **Tools:** FastAPI, SQLAlchemy + SQLite, pandas, openpyxl, Pydantic v2, rapidfuzz, Faker.
+- **Tools:** FastAPI, SQLAlchemy + SQLite (local) / Postgres via psycopg (deployed), pandas, openpyxl, Pydantic v2, rapidfuzz, Faker.
 - **Inputs:** uploaded files; `Alert` objects from B. **Outputs:** clean tables, REST endpoints, labelled demo dataset.
 - **Depends on:** B for the `Alert` shape (fixed in 3.7). **Blocks:** C needs endpoints (stub JSON by 11:50); B needs the generator only for the end-to-end run, not for calibration.
 - **Milestones:** 11:50 schema + stub endpoints · 12:15 generator v1 pushed · 12:45 ingestion with validation report · 13:15 alerts/cases/decision API.
 
-### Workstream B — Detection and risk intelligence engine (owner: ____)
+### Workstream B — Detection and risk intelligence engine (owner: mansh7763)
 
 **Mission:** turn records into correct, explainable risk. Owns everything the hidden tests will most likely score.
 
@@ -313,7 +344,8 @@ All three are equal in effort: each owns one layer end to end, plus one stretch 
 
 **Mission:** make the system usable and the intelligence visible. Owns the demo and the AI layer.
 
-- **Modules:** `frontend/` (React + Vite + Tailwind), `backend/app/ai/` (Groq client, prompts, grounding guard, PII masking, template narrative).
+- **Modules:** `frontend/` (React + Vite + Tailwind), `backend/app/ai/` (Groq client, prompts, grounding guard, PII masking, template narrative), `backend/app/api/dashboard.py` (dashboard summary endpoint, explicitly C's; review 2 #10).
+- **Deployment-ready from the start (review 2 #21):** the API base URL comes from `VITE_API_URL`; `frontend/vercel.json` has an SPA rewrite to `index.html`, so refreshing a page does not return 404.
 - **Features:**
   1. **Data screen:** upload (drag and drop, multiple files), mapping preview, data quality report, "Load demo data" button.
   2. **Dashboard** (screen *and* the `/api/dashboard/summary` endpoint, moved from A): KPI tiles (records processed, flagged, high-risk, open cases), risk-band distribution including Low, category and detection-type breakdowns, alerts over time by `event_time`; the 6 filters; a "detection coverage" note listing indicators skipped for missing data.
@@ -336,9 +368,11 @@ All three are equal in effort: each owns one layer end to end, plus one stretch 
 
 ### Integration rules
 
-- Folders are owned: A = `backend/app/{ingest,models,api,datagen}`, B = `backend/app/{features,detect,graph,score}` + `backend/tests`, C = `frontend/` + `backend/app/ai`. `schemas.py` and `main.py` change only with a heads-up in chat.
+- Folders are owned: A = `backend/app/{ingest,models,api,datagen,db}` (except `api/dashboard.py`), B = `backend/app/{features,detect,graph,score}` + `backend/tests` + `evals/`, C = `frontend/` + `backend/app/ai` + `backend/app/api/dashboard.py`. `schemas.py` and `main.py` change only with a heads-up in chat. The source of truth is `.github/workstreams.json`; see `Docs/OWNERSHIP.md` for the overlap warnings.
 - Merge to `main` at least every 45 minutes. The 13:15 and 13:35 slots are for integration only.
 - A single command runs everything (`run.ps1` / `run.sh`: backend on :8000, frontend on :5173).
+- **Backend dependencies (review 2 #14)** go in `backend/requirements.txt` with Python 3.12 pinned (the root `requirements.txt` stays as the PDF-reading tools).
+- **All config from the environment (review 2 #17):** `DATABASE_URL`, `GROQ_API_KEY`, `CORS_ORIGINS` (backend) and `VITE_API_URL` (frontend). Their names go in `.env.example` with no real values. Uvicorn listens on `$PORT` (default 8000).
 
 ---
 
@@ -347,11 +381,11 @@ All three are equal in effort: each owns one layer end to end, plus one stretch 
 | Time | A | B | C |
 | --- | --- | --- | --- |
 | 11:30–11:50 | Repo scaffold (FastAPI), `schemas.py` together with B, stub endpoints | `Signal`/`Alert` types, rules.yaml skeleton | Vite + Tailwind shell, routes, `types.ts`, mock JSON |
-| 11:50–12:45 | Generator v1 (12:00), ingestion + validation | Profiles, TX and LG indicators | Upload screen, dashboard on mocks |
+| 11:50–12:45 | Generator v1 (12:15), ingestion + validation | Golden dataset (12:00), profiles, TX and LG indicators | Upload screen, dashboard on mocks |
 | 12:45–13:15 | Alerts/cases/decision API | DV, AP, MT indicators, scoring, alert generation | Alert detail, case queue on mocks |
 | 13:15–13:35 | **Integrate:** load demo → run detection → dashboard → case decision | Calibration tests; fix false positives | Switch to the real API |
 | 13:35–13:50 | Test with the organiser's sample files (if given); fix mapping | Same | Run the demo path twice; **submit Level 1** |
-| After L1 | Customer 360, dirty-file demo | Graph rings, anomaly, CL-01, scorecard | Waterfall, graph view, Groq summary |
+| After L1 | Customer 360, dirty-file demo; **deploy backend to Render + Aiven** (review 2 #22) | Graph rings, anomaly, CL-01, scorecard | Waterfall, graph view, Groq summary; **deploy frontend to Vercel** |
 
 **Level 1 done =** a judge can (1) upload CSV/XLSX/JSON and see a validation report, (2) run detection, (3) see the dashboard with filters, (4) open an alert and see why with evidence, (5) open its case, mark Requires Investigation or False Positive, and see the original alert unchanged with a decision log.
 
@@ -366,6 +400,23 @@ All three are equal in effort: each owns one layer end to end, plus one stretch 
 | Unsupported AI claims | Template narrative is the default; LLM output is grounded and checked |
 | Integration crunch at 13:30 | Contract fixed at 11:50; stubs from minute 20; merges every 45 min |
 | Groq outage or slow Wi-Fi | AI is optional; the app works fully offline |
+| Aiven, Render or the venue network goes down (review 2 #23) | Run locally on SQLite with the demo data; the demo never depends on the deployed copy |
+
+---
+
+## 8. Deployment (after Level 1; review 2 #24)
+
+**Hard deadline: code, prototype and deck locked on HackCulture by 6:00 PM (review 2 #15).** A hosted URL is optional, so deployment never blocks a submission.
+
+| Part | Service | Settings |
+| --- | --- | --- |
+| Frontend | **Vercel** | Root `frontend/`; env `VITE_API_URL` = the Render URL; `vercel.json` SPA rewrite |
+| Backend | **Render** (web service) | Root `backend/`; start `uvicorn app.main:app --host 0.0.0.0 --port $PORT`; env `DATABASE_URL`, `GROQ_API_KEY`, `CORS_ORIGINS` = the Vercel URL |
+| Database | **Aiven Postgres** | Connection string with `sslmode=require` in Render's `DATABASE_URL` |
+
+- **Not Vercel for the backend:** its serverless functions do not suit a local database file, file uploads, or a long detection run.
+- Demo data loads on startup when the database is empty, so a fresh deploy is never blank.
+- **Before deploying, check the current free-tier limits** of Vercel, Render and Aiven, especially Render's memory, since pandas and scikit-learn are memory-heavy. These have not been verified.
 
 ## Sources
 
