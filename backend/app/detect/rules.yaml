@@ -37,6 +37,13 @@ indicators:
   AP-02: {weight: 0.30, params: {count: 3, days: 7}}         # application velocity
   AP-03: {weight: 0.50, params: {share: 0.7, hours: 48}}     # loan disbursement -> >=70% to new recipients in 48h (P1, F04)
   ID-01: {weight: 0.35}                                      # application contact differs from profile and is reused by others
+  ID-02: {weight: 0.30}                                      # profile phone/mailbox shared with another name after normalising (F01)
+  # Issue #6: frauds that stay under per-payment rules. Weights < 0.70; each needs corroboration for High.
+  TX-06: {weight: 0.40, params: {windows_hours: [24, 168], quantile: 0.95, min_windows: 5, min_ratio: 1.5}}  # rolling total >= 1.5x own p95 (F10)
+  TX-07: {weight: 0.40, params: {count: 3, hours: 24, low: 0.75, high: 1.0, min_z: 1.0}}  # >=3 unusually high payments kept just below the flag level
+  TX-08: {weight: 0.30, params: {dormant_days: 90, observed_days: 180, follow_days: 7}}  # dormant account wakes and pays new payees (F09)
+  NW-01: {weight: 0.40, params: {min_payers: 3, hours: 72, established_payers: 3}}  # unrelated customers' first payments converge (F05)
+  NW-02: {weight: 0.45, params: {max_hops: 4, hours: 72, tolerance: 0.10}}  # money returns to its origin through 3+ accounts (F11)
 
 mitigations:
   MT-PAYEE: {weight: 0.60, params: {min_prior: 3, tolerance: 0.25}}  # regular payee, similar amount

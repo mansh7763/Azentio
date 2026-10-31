@@ -13,9 +13,11 @@ from app.detect.config import RulesConfig, load_rules
 from app.detect.dataset import ID_COLUMN, Dataset, prepare
 from app.detect.indicators.applications import application_signals
 from app.detect.indicators.devices import device_signals
+from app.detect.indicators.flows import flow_signals
 from app.detect.indicators.loanflow import loan_outflow_signals
 from app.detect.indicators.logins import login_bursts, login_signals
 from app.detect.indicators.mitigation import mitigation_signals
+from app.detect.indicators.network import network_signals
 from app.detect.indicators.transfers import transfer_signals
 from app.detect.registry import available
 from app.detect.units import ScoringUnit, build_units
@@ -102,6 +104,7 @@ def run_detection(dataset: Dataset, config: RulesConfig | None = None, run_id: s
     signals: list[Signal] = []
     if ds.has("transactions"):
         signals += transfer_signals(ds, cfg, profiles) + mitigation_signals(ds, cfg, profiles, bursts)
+        signals += flow_signals(ds, cfg, profiles) + network_signals(ds, cfg, profiles)
     if ds.has("logins"):
         signals += login_signals(ds, cfg, bursts) + device_signals(ds, cfg)
     if ds.has("applications"):

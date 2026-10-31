@@ -13,6 +13,9 @@ FAMILY = {
     "TX-01": "amount", "TX-02": "amount", "HV-01": "amount",
     "TX-03": "new_payee", "TX-05": "new_payee",
     "LG-01": "failed_login", "LG-02": "failed_login", "LG-03": "failed_login",
+    # Issue #6: rolling totals and structuring measure the same money as the amount rules; ID-02 is ID-01 after
+    # normalisation. Only the strongest of each family counts, so they never stack on one fact.
+    "TX-06": "amount", "TX-07": "amount", "ID-01": "identity", "ID-02": "identity",
 }
 
 

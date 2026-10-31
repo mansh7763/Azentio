@@ -2,7 +2,7 @@
 
 > Hand-built calibration scenarios, written alongside the rules. They show the rules behave as designed; they are not an accuracy measurement.
 
-Rules version `1b9277a88059` · run `RUN-56f2b6a80b` · **34 / 34 scenarios behave as designed**
+Rules version `c4eb386fe3a5` · run `RUN-d29df01afe` · **34 / 34 scenarios behave as designed**
 
 | Group | Passed |
 | --- | --- |
@@ -11,7 +11,7 @@ Rules version `1b9277a88059` · run `RUN-56f2b6a80b` · **34 / 34 scenarios beha
 | lookalike, must stay Low | 15 / 15 |
 | must stay silent | 4 / 4 |
 
-Alerts on entities no scenario mentions: 25 (10 at Medium or High: BURST-C004-L-C004-F0 (Medium 55), T-C006-F0 (Medium 59), T-C006-F1 (Medium 59), T-C006-F2 (Medium 59), T-C006-F3 (High 70), T-C006-F4 (High 82), T-C021-PAY0-3 (Medium 45), T-C021-PAY0-4 (Medium 67), T-C021-PAY1-4 (Medium 40), T-C021-PAY2-4 (Medium 40)). Unreviewed: **0** (reasons for the reviewed ones: `evals/reviewed_unexpected.yaml`).
+Alerts on entities no scenario mentions: 25 (10 at Medium or High: BURST-C004-L-C004-F0 (Medium 55), T-C006-F0 (High 71), T-C006-F1 (High 71), T-C006-F2 (High 71), T-C006-F3 (High 79), T-C006-F4 (High 87), T-C021-PAY0-3 (Medium 45), T-C021-PAY0-4 (Medium 67), T-C021-PAY1-4 (Medium 40), T-C021-PAY2-4 (Medium 40)). Unreviewed: **0** (reasons for the reviewed ones: `evals/reviewed_unexpected.yaml`).
 
 | Scenario | Group | Unit · entity | Expected | Actual | Top contributions | Result |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -42,8 +42,8 @@ Alerts on entities no scenario mentions: 25 (10 at Medium or High: BURST-C004-L-
 | LK-T2-rent | lookalike, must stay Low | transaction · T-C022-RENT6 | <= Low | no alert | — | ✅ |
 | LK-T3 | lookalike, must stay Low | transaction · T-C023-TRIP | <= Low | no alert | — | ✅ |
 | LK-T4-0 | capped | transaction · T-C024-FEST0 | <= Medium | Medium 45 | TX-01 +45 | ✅ |
-| LK-T4-1 | capped | transaction · T-C024-FEST1 | <= Medium | Medium 43 | TX-01 +43 | ✅ |
-| LK-T4-2 | capped | transaction · T-C024-FEST2 | <= Medium | Low 33 | TX-01 +33 | ✅ |
+| LK-T4-1 | capped | transaction · T-C024-FEST1 | <= Medium | Medium 43 | TX-01 +43, TX-06 +0 | ✅ |
+| LK-T4-2 | capped | transaction · T-C024-FEST2 | <= Medium | Medium 40 | TX-06 +40, TX-01 +0 | ✅ |
 | AP-T2-0 | must stay silent | application · APP-C025-0 | no alert | no alert | — | ✅ |
 | AP-T2-1 | must stay silent | application · APP-C025-1 | no alert | no alert | — | ✅ |
 | G5-payroll | lookalike, must stay Low | transaction · T-C021-PAY6-4 | <= Low | Low 7 | TX-04 +40, MT-PAYEE -17, MT-RECUR -13 | ✅ |

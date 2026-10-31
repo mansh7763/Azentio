@@ -21,6 +21,23 @@ def _norm(attr: str, value) -> str | None:
     return value.strip().lower()
 
 
+def _email(value) -> str | None:
+    """Mailbox identity: case-insensitive; for Gmail, dots and '+tags' in the local part reach the same inbox."""
+    if not isinstance(value, str) or "@" not in value:
+        return None
+    local, domain = value.strip().lower().rsplit("@", 1)
+    if domain in ("gmail.com", "googlemail.com"):
+        local, domain = local.split("+", 1)[0].replace(".", ""), "gmail.com"
+    return f"{local}@{domain}" if local else None
+
+
+def _person(c) -> dict:
+    name = c.get("name") if isinstance(c.get("name"), str) else ""
+    return {"phone": _norm("phone", c.get("phone")), "email": _email(c.get("email")), "name": name.strip().lower(),
+            "surname": name.split()[-1].lower() if name.split() else None,
+            "address": _norm("address", c.get("address")), "since": c.get("onboarding_date")}
+
+
 def _signal(cfg, indicator_id, a, reason, evidence) -> Signal:
     return Signal(indicator_id=indicator_id, entity_id=a["application_id"], customer_id=a["customer_id"],
                   event_ids=[a["application_id"]], event_time=a["timestamp"].to_pydatetime(),
@@ -40,11 +57,12 @@ def application_signals(ds: Dataset, cfg: RulesConfig) -> list[Signal]:
     for attr in CONTACTS:
         apps[f"_{attr}"] = apps[attr].map(lambda v, a=attr: _norm(a, v)) if attr in apps else None
 
-    profile = {}
+    profile, people = {}, {}
     customers = ds.get("customers")
     if not customers.empty:
         for _, c in customers.iterrows():
             profile[c["customer_id"]] = {a: _norm(a, c.get(a)) for a in ("phone", "email")}
+            people[c["customer_id"]] = _person(c)
 
     out: list[Signal] = []
     for _, a in apps.iterrows():
@@ -88,5 +106,24 @@ def application_signals(ds: Dataset, cfg: RulesConfig) -> list[Signal]:
                     out.append(_signal(cfg, "ID-01", a, f"Application {attr} {a[attr]} differs from the customer's "
                                                         f"profile and is also used by {', '.join(others)}",
                                        [a["application_id"], *others_apps["application_id"], *others]))
+                    break
+
+        # ID-02: the applicant's own profile shares a phone or mailbox with another customer under a different name,
+        # after normalising formatting (+91/spaces, Gmail dots/+tags): identity stitching (F01). A shared surname and
+        # address is treated as family. Only customers on file by the application's time are compared.
+        me = people.get(a["customer_id"])
+        if cfg.enabled("ID-02") and me:
+            for attr in ("phone", "email"):
+                if not me[attr]:
+                    continue
+                others = sorted(
+                    cid for cid, o in people.items()
+                    if cid != a["customer_id"] and o[attr] == me[attr] and o["name"] != me["name"]
+                    and not (me["address"] and o["surname"] == me["surname"] and o["address"] == me["address"])
+                    and (o["since"] is None or pd.isna(o["since"]) or o["since"] <= a["timestamp"]))
+                if others:
+                    out.append(_signal(cfg, "ID-02", a, f"The applicant's {attr} also belongs to {', '.join(others)} "
+                                                        f"under a different name (after normalising its format)",
+                                       [a["application_id"], a["customer_id"], *others]))
                     break
     return out

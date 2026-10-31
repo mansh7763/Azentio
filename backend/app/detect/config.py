@@ -14,7 +14,7 @@ RULES_FILE = Path(__file__).resolve().parent / "rules.yaml"
 # that may differ from rules.yaml (issue #6).
 REQUIRED_PARAMS: dict[str, set[str]] = {
     "TX-01": {"z_min"}, "TX-02": {"median_multiple"}, "TX-04": {"count", "minutes"}, "TX-05": {"new_payees", "hours"},
-    "TX-06": {"windows_hours", "quantile", "min_windows"}, "TX-07": {"count", "hours", "low", "high"},
+    "TX-06": {"windows_hours", "quantile", "min_windows", "min_ratio"}, "TX-07": {"count", "hours", "low", "high", "min_z"},
     "TX-08": {"dormant_days", "observed_days", "follow_days"},
     "HV-01": {"quantile", "min_samples"}, "DV-01": {"min_customers", "days"}, "LG-01": {"failures"},
     "AP-01": {"min_applicants", "window_hours"}, "AP-02": {"count", "days"}, "AP-03": {"share", "hours"},

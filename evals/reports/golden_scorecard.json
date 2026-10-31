@@ -1,7 +1,7 @@
 {
   "note": "Hand-built calibration scenarios, written alongside the rules. They show the rules behave as designed; they are not an accuracy measurement.",
-  "run_id": "RUN-56f2b6a80b",
-  "rules_version": "1b9277a88059",
+  "run_id": "RUN-d29df01afe",
+  "rules_version": "c4eb386fe3a5",
   "passed": 34,
   "total": 34,
   "by_kind": {
@@ -411,7 +411,8 @@
       "passed": true,
       "problem": "",
       "top": [
-        "TX-01 +43"
+        "TX-01 +43",
+        "TX-06 +0"
       ]
     },
     {
@@ -420,12 +421,13 @@
       "unit": "transaction",
       "entity": "T-C024-FEST2",
       "expected": "<= Medium",
-      "score": 33,
-      "band": "Low",
+      "score": 40,
+      "band": "Medium",
       "passed": true,
       "problem": "",
       "top": [
-        "TX-01 +33"
+        "TX-06 +40",
+        "TX-01 +0"
       ]
     },
     {
@@ -500,11 +502,11 @@
     "total": 25,
     "medium_or_high": [
       "BURST-C004-L-C004-F0 (Medium 55)",
-      "T-C006-F0 (Medium 59)",
-      "T-C006-F1 (Medium 59)",
-      "T-C006-F2 (Medium 59)",
-      "T-C006-F3 (High 70)",
-      "T-C006-F4 (High 82)",
+      "T-C006-F0 (High 71)",
+      "T-C006-F1 (High 71)",
+      "T-C006-F2 (High 71)",
+      "T-C006-F3 (High 79)",
+      "T-C006-F4 (High 87)",
       "T-C021-PAY0-3 (Medium 45)",
       "T-C021-PAY0-4 (Medium 67)",
       "T-C021-PAY1-4 (Medium 40)",
