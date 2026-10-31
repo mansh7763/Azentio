@@ -17,6 +17,7 @@ from app.detect.indicators.flows import flow_signals
 from app.detect.indicators.loanflow import loan_outflow_signals
 from app.detect.indicators.logins import login_bursts, login_signals
 from app.detect.indicators.mitigation import mitigation_signals
+from app.detect.ml import shadow_score
 from app.detect.indicators.network import network_signals
 from app.detect.indicators.transfers import transfer_signals
 from app.detect.registry import available
@@ -171,13 +172,15 @@ def score_signals(parts: Collected, cfg: RulesConfig, run_id: str | None = None)
         if breakdown.mitigation_suspended:
             narrative += ". Mitigating factors suspended: suspicious login activity before this event"
 
+        # Shadow ML score from the same evidence; it never changes score, band or case (Stage 1 rules stay official).
+        shadow = shadow_score(everything, any(c.kind == "floor" and c.points > 0 for c in lines)) or {}
         alerts.append(Alert(
             alert_id="ALT-" + key[:10], detection_run_id=rid, dedupe_key=key, unit_type=unit.unit_type,
             primary_entity_id=unit.primary_entity_id, customer_id=unit.customer_id, event_ids=unit.event_ids,
             event_time=unit.event_time, created_at=created, category=category, product=unit.product,
             detection_types=sorted({s.indicator_id for s in risk} | ({f"CHAIN:{chain.name}"} if chain else set())),
             score=breakdown.score, band=breakdown.band, contributions=lines, entities=_entities(unit, ds),
-            evidence=_evidence(ds, evidence_ids), narrative=narrative, rules_version=cfg.version,
+            evidence=_evidence(ds, evidence_ids), narrative=narrative, rules_version=cfg.version, **shadow,
         ))
 
     alerts.sort(key=lambda a: (a.event_time, a.alert_id))

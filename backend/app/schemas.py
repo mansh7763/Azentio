@@ -174,6 +174,10 @@ class Alert(BaseModel):
     evidence: dict[str, list[dict]] = Field(default_factory=dict)
     narrative: str = ""
     rules_version: str
+    # ML shadow score (app/detect/ml.py): shown next to the rule score, never used for the band or the case.
+    ml_score: int | None = None
+    ml_band: str | None = None
+    ml_factors: list[dict] = Field(default_factory=list)
 
 
 class DetectionRun(BaseModel):

@@ -167,6 +167,17 @@ def main() -> int:
                                "boosted_trees": {"medium": round(g_medium, 4), "high": round(g_high, 4)}},
         "weights": weights, "boosted_tree_importance_D2": importance,
     }
+    # The shadow model the engine scores with (backend/app/detect/ml.py). Rule scores and bands never use it.
+    model = {
+        "model": "logistic regression on rule evidence (weight x strength), sign-constrained",
+        "trained_on": report["train"], "tested_on": report["test"], "rules_version": train["alerts"][0].rules_version,
+        "intercept": float(theta[0]), "coefficients": {c: float(w) for c, w in zip(columns, theta[1:])},
+        "thresholds": {"medium": t_medium, "high": t_high},
+        "held_out": {"average_precision": report["average_precision_test"]["learned_weights"],
+                     **report["incident_metrics_test"]["learned_weights"]},
+        "note": NOTE,
+    }
+    (ROOT / "backend" / "app" / "detect" / "ml_model.json").write_text(json.dumps(model, indent=2), encoding="utf-8")
     REPORTS.mkdir(exist_ok=True)
     (REPORTS / "learned_weights.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
 

@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {Activity, ArrowDownToLine, ArrowRight, CheckCircle2, Database, FileSearch, FolderOpen, LayoutDashboard, Loader2, Play, RefreshCw, ShieldCheck, SlidersHorizontal, UploadCloud, X} from 'lucide-react';
 import {ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip} from 'recharts';
 import {api} from './api';
+import {MlScore} from './MlScore';
 import type {Alert, Batch, Case, Rejected, Report, Summary} from './contracts';
 
 const label = (s:string)=>s.replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
@@ -43,6 +44,7 @@ function Evidence({alert}:{alert:Alert}) {
     <p className="narrative">{alert.narrative || alert.contributions.map(c=>c.reason).join('. ') || 'No explanation supplied by the detector.'}</p>
     <div className="meta"><span>Entity <b>{alert.primary_entity_id}</b></span><span>Product <b>{alert.product || 'Not supplied'}</b></span><span>Event <b>{date(alert.event_time)}</b></span><span>Rule version <b>{alert.rules_version}</b></span></div>
     {alert.detection_types.includes('AP-03')&&<LoanFlow alert={alert}/>}
+    <MlScore alert={alert}/>
     <h3>Why this score</h3><p className="muted">Select a factor to inspect its supporting records.</p>
     {alert.contributions.map((c,i)=><button className={`factor ${c.kind}`} key={i} onClick={()=>setFocus(c.evidence_ids)}><span className="points">{c.points>0?'+':''}{c.points}</span><span><b>{c.indicator_id || label(c.kind)}</b><span>{c.reason}</span><small>{c.evidence_ids.join(' · ') || 'No evidence IDs supplied'}</small></span><ArrowRight size={15}/></button>)}
     {alert.contributions.reduce((n,c)=>n+c.points,0)!==alert.score && <p className="warning">The supplied contributions do not reconcile to the score.</p>}
