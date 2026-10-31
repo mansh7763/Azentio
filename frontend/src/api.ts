@@ -5,7 +5,7 @@ export async function api<T>(path:string, options:RequestInit = {}):Promise<T> {
   try {
     const response = await fetch(`${base}/api${path}`, {...options,signal:controller.signal});
     const data = await response.json().catch(()=>null);
-    if (!response.ok) throw new Error(typeof data?.detail === 'string' ? data.detail : `Request failed (${response.status}): ${JSON.stringify(data?.detail || response.statusText)}`);
+    if (!response.ok) throw new Error(typeof data?.detail === 'string' ? data.detail : response.status>=500&&!data?.detail ? 'The backend is not responding. Check that it is running, then retry.' : `Request failed (${response.status}): ${JSON.stringify(data?.detail || response.statusText)}`);
     return data as T;
   } catch(error) {if(error instanceof DOMException && error.name==='AbortError') throw new Error('The request timed out. Check the backend and retry.'); throw error;}
   finally {clearTimeout(timer);}
