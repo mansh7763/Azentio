@@ -97,3 +97,12 @@ def test_single_indicator_never_high(cfg):
 def test_lines_carry_evidence(cfg):
     _, lines = total([risk("A", 0.45)], [mit("MT-PAYEE", 0.6)], CHAIN, cfg=cfg)
     assert all(c.evidence_ids for c in lines)
+
+
+def test_cap_keeps_score_below_high_and_lines_sum(cfg):
+    risks = [risk("LG-01", 0.3), risk("LG-02", 0.35), risk("LG-03", 0.35), risk("DV-03", 0.25)]
+    b = score(risks, [], None, False, cfg, cap=69)
+    lines = contributions(risks, [], None, b)
+    assert b.score == 69 and b.band == Band.medium
+    assert sum(c.points for c in lines) == 69
+    assert [c for c in lines if c.indicator_id == "CAP"][0].points < 0

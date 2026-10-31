@@ -34,6 +34,11 @@ def contributions(risk: list[Signal], mitigating: list[Signal], chain: ChainMatc
     if chain and lift > 0:
         lines.append((lift, Contribution(indicator_id=f"CHAIN:{chain.name}", kind="floor", points=0,
                                          reason=chain.reason, evidence_ids=chain.evidence_ids)))
+    elif lift < 0:
+        evidence = [e for s in active for e in (s.evidence_ids or s.event_ids)][:10]
+        lines.append((lift, Contribution(indicator_id="CAP", kind="floor", points=0,
+                                         reason="Capped below High: no money or beneficiary moved",
+                                         evidence_ids=evidence)))
 
     if not lines:
         return []

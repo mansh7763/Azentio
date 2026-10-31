@@ -45,7 +45,7 @@ def band_for(value: int, cfg: RulesConfig) -> Band:
 
 
 def score(risk: list[Signal], mitigating: list[Signal], chain: ChainMatch | None,
-          suspend_mitigation: bool, cfg: RulesConfig) -> ScoreBreakdown:
+          suspend_mitigation: bool, cfg: RulesConfig, cap: int | None = None) -> ScoreBreakdown:
     keep = 1.0
     for s in risk:
         keep *= 1 - effect(s)
@@ -56,6 +56,8 @@ def score(risk: list[Signal], mitigating: list[Signal], chain: ChainMatch | None
         damped *= 1 - effect(m)
 
     final = max(damped, float(chain.floor)) if chain else damped
+    if cap is not None:
+        final = min(final, float(cap))
     value = int(round(final))
     suspended = suspend_mitigation and any(m.indicator_id in SUSPENDABLE for m in mitigating)
     return ScoreBreakdown(undamped, damped, final, value, band_for(value, cfg), suspended)
