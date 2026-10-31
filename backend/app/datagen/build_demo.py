@@ -45,7 +45,7 @@ def json_bytes(frame: pd.DataFrame) -> bytes:
 
 def build() -> None:
     (OUT / "dirty").mkdir(parents=True, exist_ok=True)
-    for name in ("customers", "accounts", "applications"):
+    for name in ("customers", "accounts", "applications", "claims"):
         (OUT / f"{name}.csv").write_bytes((GOLDEN / f"{name}.csv").read_bytes())
     (OUT / "transactions.xlsx").write_bytes(excel_bytes(_rows("transactions"), "transactions"))
     (OUT / "logins.json").write_bytes(json_bytes(_rows("logins")))

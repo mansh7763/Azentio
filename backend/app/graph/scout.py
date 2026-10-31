@@ -4,6 +4,7 @@ Deterministic mining finds every candidate and its evidence (real record IDs onl
 only writes the hypothesis and a suggested rule for each candidate; it cannot add entities or change any score.
 Every suggestion needs analyst approval. Works with the LLM off."""
 
+import hashlib
 import json
 import os
 from collections import defaultdict
@@ -85,7 +86,8 @@ def pattern_scout(ds: Dataset, alerts: list[Alert], use_llm: bool = True) -> dic
     suggestions = []
     for i, c in enumerate(cands):
         hyp, rule = texts[i] if used else _template(c)
-        suggestions.append({"id": f"SUG-{i + 1}", "kind": c["kind"], "title": c["title"], "hypothesis": hyp,
+        key = c["kind"] + "|" + ",".join(sorted(c["entities"]))
+        suggestions.append({"id": "SUG-" + hashlib.sha256(key.encode()).hexdigest()[:10], "kind": c["kind"], "title": c["title"], "hypothesis": hyp,
                             "suggested_rule": rule, "entities": c["entities"], "evidence_ids": c["evidence_ids"],
                             "source": "ai" if used else "rules", "status": "suggested"})
     return {"suggestions": suggestions, "used_llm": used,
