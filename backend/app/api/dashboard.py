@@ -25,9 +25,21 @@ def summary(customer_id: str | None = None, band: str | None = None, category: s
     out = project(result, customer_id, band, category, detection_type, product, txn_id, date_from, date_to)
     stored = stored_counts(session)
     out["records_stored"] = stored
+    out["filter_options"] = filter_options(result.alerts)
     out["run_stale"] = run is not None and nonzero(run.records_processed) != nonzero(stored)
     out["source_note"] = source_note(out["run_id"], out["records_processed"], stored, out["run_stale"])
     return out
+
+
+def filter_options(alerts) -> dict[str, list[str]]:
+    """Values the filters can match in this run, whatever is currently filtered."""
+    return {
+        "customer_id": sorted({e.entity_id for a in alerts for e in a.entities if e.entity_type == "customer"}
+                              | {a.customer_id for a in alerts if a.customer_id}),
+        "txn_id": sorted({a.primary_entity_id for a in alerts if a.unit_type.value == "transaction"}),
+        "product": sorted({a.product for a in alerts if a.product}),
+        "detection_type": sorted({t for a in alerts for t in a.detection_types}),
+    }
 
 
 def stored_counts(session: Session) -> dict[str, int]:

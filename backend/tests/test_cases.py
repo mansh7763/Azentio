@@ -202,3 +202,26 @@ def test_results_survive_a_new_session(run):
 def test_customer_360_shows_stored_alerts(run):
     alerts = client.get("/api/customers/C002/360").json()["alerts"]
     assert any(a["primary_entity_id"] == "T-C002-ATO" for a in alerts)
+
+
+@pytest.mark.parametrize("params", [
+    {"customer_id": " c002 "}, {"txn_id": "t-c002-ato"}, {"detection_type": "lg-02"}, {"product": "SAVINGS"},
+    {"band": "high"}, {"category": "ACCOUNT_TAKEOVER"},
+])
+def test_filters_ignore_case_and_spaces(run, params):
+    canonical = {"customer_id": "C002", "txn_id": "T-C002-ATO", "detection_type": "LG-02", "product": "savings",
+                 "band": "High", "category": "account_takeover"}
+    expected = client.get("/api/alerts", params={k: canonical[k] for k in params}).json()["total"]
+    assert expected > 0 and client.get("/api/alerts", params=params).json()["total"] == expected
+
+
+def test_partial_ids_do_not_match(run):
+    assert client.get("/api/alerts", params={"customer_id": "C00", "include_low": True}).json()["total"] == 0
+
+
+def test_dashboard_lists_filter_options_whatever_is_filtered(run):
+    all_options = client.get("/api/dashboard/summary").json()["filter_options"]
+    narrowed = client.get("/api/dashboard/summary", params={"customer_id": "C002"}).json()
+    assert narrowed["filter_options"] == all_options
+    assert "C002" in all_options["customer_id"] and "T-C002-ATO" in all_options["txn_id"]
+    assert "savings" in all_options["product"] and "LG-02" in all_options["detection_type"]

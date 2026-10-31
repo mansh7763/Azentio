@@ -100,9 +100,14 @@ def incident_alerts(session: Session, key: str) -> list[Alert]:
     return [Alert(**r.payload) for r in session.scalars(query)]
 
 
+def _same(value: str | None, wanted: str) -> bool:
+    """Filter text is typed by people: ignore case and stray spaces, but match the whole value."""
+    return (value or "").strip().casefold() == wanted.strip().casefold()
+
+
 def involves_customer(alert: Alert, customer_id: str) -> bool:
-    return alert.customer_id == customer_id or any(
-        e.entity_type == "customer" and e.entity_id == customer_id for e in alert.entities)
+    return _same(alert.customer_id, customer_id) or any(
+        e.entity_type == "customer" and _same(e.entity_id, customer_id) for e in alert.entities)
 
 
 def filter_alerts(alerts: list[Alert], customer_id: str | None = None, band: str | None = None,
@@ -112,11 +117,11 @@ def filter_alerts(alerts: list[Alert], customer_id: str | None = None, band: str
     def keep(a: Alert) -> bool:
         day = a.event_time.date()
         return ((customer_id is None or involves_customer(a, customer_id))
-                and (band is None or a.band.value == band)
-                and (category is None or a.category.value == category)
-                and (detection_type is None or detection_type in a.detection_types)
-                and (product is None or a.product == product)
-                and (txn_id is None or txn_id == a.primary_entity_id or txn_id in a.event_ids)
+                and (band is None or _same(a.band.value, band))
+                and (category is None or _same(a.category.value, category))
+                and (detection_type is None or any(_same(t, detection_type) for t in a.detection_types))
+                and (product is None or _same(a.product, product))
+                and (txn_id is None or any(_same(e, txn_id) for e in [a.primary_entity_id, *a.event_ids]))
                 and (date_from is None or day >= date_from)
                 and (date_to is None or day <= date_to))
 
