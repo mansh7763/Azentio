@@ -1,4 +1,3 @@
-# PLACEHOLDER - owner A replaces (tables, triggers per dialect, batch inserts)
 """Database engine and session from DATABASE_URL: SQLite locally, Postgres when deployed."""
 
 from sqlalchemy import create_engine, text
@@ -11,11 +10,20 @@ class Base(DeclarativeBase):
     pass
 
 
+def driver_url(url: str) -> str:
+    """Hosted Postgres gives postgres:// or postgresql:// URLs; SQLAlchemy needs the psycopg driver named."""
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix):]
+    return url
+
+
 def _connect_args(url: str) -> dict:
     return {"check_same_thread": False} if url.startswith("sqlite") else {}
 
 
-engine = create_engine(settings.database_url, connect_args=_connect_args(settings.database_url))
+DATABASE_URL = driver_url(settings.database_url)
+engine = create_engine(DATABASE_URL, connect_args=_connect_args(DATABASE_URL), pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
 
@@ -26,15 +34,22 @@ def init_db() -> None:
     from app import models  # noqa: F401  (registers the tables on Base)
 
     Base.metadata.create_all(engine)
-    if engine.dialect.name != "sqlite":  # Postgres parity is deferred until deployment
-        return
     with engine.begin() as conn:
+        if engine.dialect.name == "postgresql":
+            conn.execute(text(
+                "CREATE OR REPLACE FUNCTION refuse_change() RETURNS trigger AS $$ BEGIN "
+                "RAISE EXCEPTION '% rows are immutable', TG_TABLE_NAME; END; $$ LANGUAGE plpgsql"
+            ))
         for table in IMMUTABLE_TABLES:
             for action in ("UPDATE", "DELETE"):
-                conn.execute(text(
-                    f"CREATE TRIGGER IF NOT EXISTS {table}_no_{action.lower()} BEFORE {action} ON {table} "
-                    f"BEGIN SELECT RAISE(ABORT, '{table} rows are immutable'); END"
-                ))
+                name = f"{table}_no_{action.lower()}"
+                if engine.dialect.name == "postgresql":
+                    conn.execute(text(f"DROP TRIGGER IF EXISTS {name} ON {table}"))
+                    conn.execute(text(f"CREATE TRIGGER {name} BEFORE {action} ON {table} "
+                                      "FOR EACH ROW EXECUTE FUNCTION refuse_change()"))
+                else:
+                    conn.execute(text(f"CREATE TRIGGER IF NOT EXISTS {name} BEFORE {action} ON {table} "
+                                      f"BEGIN SELECT RAISE(ABORT, '{table} rows are immutable'); END"))
 
 
 def get_session():
