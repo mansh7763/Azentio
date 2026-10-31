@@ -1,0 +1,32 @@
+name: Overlap check
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write  # needed to post a commit comment
+
+jobs:
+  overlap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check for overlapping changes
+        id: check
+        run: python scripts/overlap_check.py --ci "${{ github.event.before }}" "${{ github.sha }}"
+
+      - name: Comment on the commit
+        if: steps.check.outputs.found == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/comments" \
+            -f body="$(cat overlap_report.md)"

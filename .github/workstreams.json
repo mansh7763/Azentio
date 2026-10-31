@@ -1,0 +1,46 @@
+{
+  "_comment": "Who owns which paths. Add your git author email under 'members' (run: git config user.email). Paths are prefixes from the repo root.",
+  "workstreams": {
+    "A": {
+      "name": "Data platform, cases and API",
+      "members": [],
+      "paths": [
+        "backend/app/ingest/",
+        "backend/app/models.py",
+        "backend/app/api/",
+        "backend/app/datagen/"
+      ]
+    },
+    "B": {
+      "name": "Detection and risk intelligence",
+      "members": ["130061782+mansh7763@users.noreply.github.com"],
+      "paths": [
+        "backend/app/features/",
+        "backend/app/detect/",
+        "backend/app/graph/",
+        "backend/app/score/",
+        "backend/tests/",
+        "evals/"
+      ]
+    },
+    "C": {
+      "name": "Investigation UI and AI",
+      "members": [],
+      "paths": [
+        "frontend/",
+        "backend/app/ai/"
+      ]
+    }
+  },
+  "shared": [
+    "backend/app/schemas.py",
+    "backend/app/main.py",
+    "requirements.txt",
+    "backend/requirements.txt",
+    "frontend/package.json",
+    "frontend/src/types.ts",
+    ".gitignore",
+    ".env.example"
+  ],
+  "recent_hours": 6
+}

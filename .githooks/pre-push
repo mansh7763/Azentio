@@ -1,0 +1,12 @@
+#!/bin/sh
+# Warns (never blocks) when your push overlaps a teammate's recent changes.
+# Enable once per clone:  git config core.hooksPath .githooks
+ROOT="$(git rev-parse --show-toplevel)"
+for PY in "$ROOT/.venv/Scripts/python.exe" "$ROOT/.venv/bin/python" python3 python py; do
+  if command -v "$PY" >/dev/null 2>&1 || [ -x "$PY" ]; then
+    "$PY" "$ROOT/scripts/overlap_check.py"
+    exit 0
+  fi
+done
+echo "[overlap] Python not found; skipping overlap check."
+exit 0
