@@ -21,6 +21,11 @@ TIME_COLUMNS = {
 AMOUNT_COLUMNS = {"transactions": ["amount"], "accounts": ["balance"], "applications": ["amount"], "claims": ["amount"]}
 EVENT_TABLES = ("transactions", "logins", "applications", "claims")
 _NOT_NUMBER = re.compile(r"[^\d.\-]")
+INBOUND_TYPES = {"credit", "inbound", "deposit", "incoming", "refund", "salary_credit", "loan_disbursement", "disbursement"}
+
+
+def is_inbound(kind) -> bool:
+    return isinstance(kind, str) and kind.lower() in INBOUND_TYPES
 
 
 @dataclass
@@ -83,6 +88,8 @@ def _link_devices(txns: pd.DataFrame, logins: pd.DataFrame, minutes: float) -> p
     if ok.empty or not need.any():
         return txns
     left = txns.loc[need, ["customer_id", "timestamp"]].reset_index().sort_values("timestamp")
+    left["customer_id"] = left["customer_id"].astype(object)
+    ok = ok.assign(customer_id=ok["customer_id"].astype(object))
     merged = pd.merge_asof(left, ok.sort_values("_lt"), left_on="timestamp", right_on="_lt", by="customer_id",
                            direction="backward", tolerance=pd.Timedelta(minutes=minutes))
     merged = merged.set_index("index")
@@ -132,7 +139,14 @@ def prepare(ds: Dataset, cfg: RulesConfig) -> Dataset:
         accounts = frames.get("accounts")
         if accounts is not None and not accounts.empty:
             owner = dict(zip(accounts["account_id"], accounts["customer_id"]))
-            txns["customer_id"] = [c if c else owner.get(a) for c, a in zip(txns["customer_id"], txns["sender_account"])]
+            kinds = txns["type"] if "type" in txns else pd.Series([None] * len(txns), index=txns.index)
+            # Exact account links only: an outgoing transfer belongs to the sender's owner, an incoming credit
+            # (salary, refund) to the receiver's owner. Unknown accounts stay unresolved (None), never guessed.
+            txns["customer_id"] = [
+                c if isinstance(c, str) and c else owner.get(b if is_inbound(k) else s)
+                for c, s, b, k in zip(txns["customer_id"], txns["sender_account"], txns["beneficiary_account"], kinds)
+            ]
+            txns["customer_id"] = txns["customer_id"].astype(object).where(txns["customer_id"].map(lambda v: isinstance(v, str)), None)
         frames["transactions"] = _link_devices(txns, frames.get("logins", pd.DataFrame()), cfg.windows.link_minutes)
 
     return Dataset(frames)

@@ -13,6 +13,7 @@ from app.detect.config import RulesConfig, load_rules
 from app.detect.dataset import ID_COLUMN, Dataset, prepare
 from app.detect.indicators.applications import application_signals
 from app.detect.indicators.devices import device_signals
+from app.detect.indicators.loanflow import loan_outflow_signals
 from app.detect.indicators.logins import login_bursts, login_signals
 from app.detect.indicators.mitigation import mitigation_signals
 from app.detect.indicators.transfers import transfer_signals
@@ -104,7 +105,10 @@ def run_detection(dataset: Dataset, config: RulesConfig | None = None, run_id: s
     if ds.has("logins"):
         signals += login_signals(ds, cfg, bursts) + device_signals(ds, cfg)
     if ds.has("applications"):
-        signals += application_signals(ds, cfg)
+        app_signals = application_signals(ds, cfg)
+        signals += app_signals
+        if ds.has("transactions"):
+            signals += loan_outflow_signals(ds, cfg, profiles, app_signals)
     signals = [s for s in signals if s.indicator_id in can_run]
 
     times = [df[c].max() for name, df in ds.frames.items() if not df.empty

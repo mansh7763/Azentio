@@ -127,3 +127,23 @@ def test_household_is_only_possible(world):
     _, units, _ = world
     unit = units_of(units, UnitType.device_cluster, "DEV-HOME")[0]
     assert "Possible household" in [s for s in unit.signals if s.indicator_id == "MT-HOUSE"][0].reason
+
+
+def _device_logins(customers):
+    return pd.DataFrame([{"event_id": f"E{c}{i}", "customer_id": c, "timestamp": f"2026-09-0{i + 1}T1{n}:00:00Z",
+                          "device_id": "DEVX", "outcome": "success"}
+                         for n, c in enumerate(customers) for i in range(3)])
+
+
+def test_two_unrelated_customers_on_one_device_not_flagged(cfg):
+    """DV-T3: below the 3-customer threshold -> no shared-device signal."""
+    customers = pd.DataFrame([{"customer_id": "C1", "name": "A Rao", "address": "1 X St"},
+                              {"customer_id": "C2", "name": "B Das", "address": "2 Y St"}])
+    ds = prepare(Dataset.from_frames(customers=customers, logins=_device_logins(["C1", "C2"])), cfg)
+    assert device_signals(ds, cfg) == []
+
+
+def test_single_user_device_no_signal(cfg):
+    """DV-T4"""
+    ds = prepare(Dataset.from_frames(logins=_device_logins(["C1"])), cfg)
+    assert device_signals(ds, cfg) == []

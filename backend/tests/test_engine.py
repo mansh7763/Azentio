@@ -126,3 +126,40 @@ def test_coverage_reported_separately_from_risk(golden_result):
     for key in ("insufficient_history", "unresolved_link", "derived_device_link"):
         assert key in cov
     assert cov["insufficient_history"] > 0
+
+
+def test_future_rows_do_not_change_earlier_scores(raw_golden):
+    """G6: cut the data at an event; its score must be the same as with the full data."""
+    full = {a.primary_entity_id: a for a in run_detection(raw_golden).alerts}
+    for entity, table, col in (("T-C005-BIG", "transactions", "txn_id"), ("APP-C011", "applications", "application_id"),
+                               ("T-C002-ATO", "transactions", "txn_id")):
+        cutoff = raw_golden.frames[table].set_index(col).loc[entity, "timestamp"]
+        cut = Dataset({name: df[df["timestamp"] <= cutoff] if "timestamp" in df else df
+                       for name, df in raw_golden.frames.items()})
+        early = {a.primary_entity_id: a for a in run_detection(cut).alerts}
+        assert early[entity].score == full[entity].score, entity
+        assert [c.points for c in early[entity].contributions] == [c.points for c in full[entity].contributions]
+
+
+def test_every_risk_reason_is_concrete(golden_result):
+    """EX-03: each reason names a number or an identifier from the evidence, not just a rule name."""
+    for a in golden_result.alerts:
+        values = {str(v) for rows in a.evidence.values() for row in rows for v in row.values() if v is not None}
+        for c in a.contributions:
+            if c.kind == "risk":
+                assert any(ch.isdigit() for ch in c.reason) or any(v in c.reason for v in values), (a.alert_id, c.reason)
+
+
+def test_suspended_mitigation_is_stated(golden_result):
+    """EX-05"""
+    ato = [a for a in golden_result.alerts if a.primary_entity_id == "T-C002-ATO"][0]
+    assert "suspended" in ato.narrative.lower()
+
+
+def test_unresolved_account_counted_in_coverage(raw_golden):
+    import pandas as pd
+    orphan = pd.DataFrame([{"txn_id": "TX-ORPHAN", "sender_account": "A-UNKNOWN", "timestamp": "2026-10-20T10:00:00Z",
+                            "amount": "90000", "currency": "INR", "beneficiary_account": "BEN-X", "status": "success"}])
+    ds = Dataset({**raw_golden.frames,
+                  "transactions": pd.concat([raw_golden.frames["transactions"], orphan], ignore_index=True)})
+    assert run_detection(ds).run.coverage["unresolved_link"] == 1

@@ -107,7 +107,8 @@ def test_hv_threshold_uses_prior_same_currency_only(golden, cfg):
     txns = golden.get("transactions")
     thresholds = hv_threshold(golden, cfg)
     ato = txns.set_index("txn_id").loc["T-C002-ATO"]
-    prior = txns[(txns["seq"] < ato["seq"]) & (txns["currency"] == ato["currency"])]["amount"]
+    outbound = txns["type"].str.lower() != "credit"  # incoming credits are not part of the outbound threshold
+    prior = txns[(txns["seq"] < ato["seq"]) & (txns["currency"] == ato["currency"]) & outbound]["amount"]
     assert thresholds["T-C002-ATO"] == pytest.approx(prior.quantile(0.9))
     assert thresholds[txns.iloc[0]["txn_id"]] is None  # too little history -> no threshold, HV-01 skipped
 
@@ -131,3 +132,30 @@ def test_baselines_are_per_currency(cfg):
 def test_reason_names_concrete_values(golden, cfg, profiles):
     tx01 = [s for s in transfer_signals(golden, cfg, profiles) if s.indicator_id == "TX-01" and s.entity_id == "T-C005-BIG"][0]
     assert "150,000" in tx01.reason and "×" in tx01.reason
+
+
+def test_failed_transfer_not_in_baseline(cfg):
+    """TX-T7: a failed or reversed transfer must not inflate the customer's normal."""
+    rows = [(f"T{i}", "C", f"2026-09-0{i + 1}T10:00:00Z", 3000, "B") for i in range(6)]
+    frames = _frames(rows + [("TFAIL", "C", "2026-09-08T10:00:00Z", 500000, "B"),
+                             ("TNEXT", "C", "2026-09-09T10:00:00Z", 3000, "B")])
+    frames["transactions"]["status"] = ["success"] * 6 + ["failed", "success"]
+    prof = transaction_profiles(prepare(Dataset.from_frames(**frames), cfg), cfg)
+    assert prof.loc["TNEXT", "prior_max"] == 3000
+
+
+def test_inbound_credit_belongs_to_receiver_and_is_not_scored(golden, cfg, profiles):
+    txns = golden.get("transactions").set_index("txn_id")
+    assert txns.loc["T-C022-SAL6", "customer_id"] == "C022"
+    assert not [s for s in transfer_signals(golden, cfg, profiles) if s.entity_id == "T-C022-SAL6"]
+
+
+def test_unknown_sender_account_does_not_crash(cfg):
+    frames = _frames([(f"T{i}", "C", f"2026-09-0{i + 1}T10:00:00Z", 3000, "B") for i in range(6)])
+    frames["transactions"].loc[len(frames["transactions"])] = {
+        "txn_id": "TX-ORPHAN", "sender_account": "A-UNKNOWN", "timestamp": "2026-09-09T10:00:00Z",
+        "amount": "90000", "beneficiary_account": "B"}
+    ds = prepare(Dataset.from_frames(**frames), cfg)
+    prof = transaction_profiles(ds, cfg)
+    transfer_signals(ds, cfg, prof)  # must not raise
+    assert ds.get("transactions").set_index("txn_id").loc["TX-ORPHAN", "customer_id"] is None

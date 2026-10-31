@@ -18,6 +18,11 @@ def match_chain(unit: ScoringUnit, bursts: list[Burst], cfg: RulesConfig) -> Cha
     floors = cfg.floors
 
     if unit.unit_type == UnitType.transaction:
+        cashout = [s for s in unit.signals if s.indicator_id == "AP-03" and s.strength >= 1.0]
+        if cashout:  # flagged application -> disbursement -> rapid outflow, in that order (by construction)
+            return ChainMatch("loan_mule", floors.loan_mule, cashout[0].evidence_ids,
+                              "Loan-to-mule pattern: flagged loan application -> disbursement -> most of it sent to "
+                              "new recipients", Category.loan_application_fraud)
         candidates = [b for b in bursts if b.customer_id == unit.customer_id and b.success_time
                       and b.success_time <= unit.event_time <= b.success_time + window]
         if not candidates:

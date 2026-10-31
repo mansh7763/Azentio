@@ -191,9 +191,80 @@ expected.append({"id": "LG-T8", "unit_type": "login_burst", "customer": "C014", 
                  "one_alert_for": True})
 
 
+# LK-T2 — salary arrives (inbound credit), then the usual rent -> neither is flagged
+customer("C022", "Rahul Sen", "2 Lake Town", "Kolkata")
+history_logins("C022", "DEV-C022")
+for i in range(7):
+    month = BASE + timedelta(days=30 * i)
+    txns.append({"txn_id": f"T-C022-SAL{i}", "sender_account": "EMPLOYER-CO", "timestamp": iso(month),
+                 "amount": "80000", "currency": "INR", "type": "credit", "channel": "neft",
+                 "beneficiary_account": "A-C022", "beneficiary_name": "Rahul Sen", "status": "success"})
+    txn(f"T-C022-RENT{i}", "C022", month + timedelta(days=2), 20000, "LANDLORD-22")
+expected.append({"id": "LK-T2-salary", "unit_type": "transaction", "entity": "T-C022-SAL6", "no_alert": True})
+expected.append({"id": "LK-T2-rent", "unit_type": "transaction", "entity": "T-C022-RENT6", "max_band": "Low"})
+
+# LK-T3 — travelling: login from a new city on the USUAL device, then a normal payment -> Low at most
+customer("C023", "Nisha Kapoor", "40 Marine Dr", "Mumbai")
+for i in range(8):
+    login(f"L-C023-H{i}", "C023", BASE + timedelta(days=20 * i, hours=1), "DEV-C023", city="Mumbai")
+small_history("C023", ["BEN-23A"], [3000, 3200, 2800, 3100, 3000, 2900])
+login("L-C023-TRIP", "C023", D + timedelta(days=12, hours=9), "DEV-C023", city="Delhi")
+txn("T-C023-TRIP", "C023", D + timedelta(days=12, hours=9, minutes=10), 3100, "BEN-23A")
+expected.append({"id": "LK-T3", "unit_type": "transaction", "entity": "T-C023-TRIP", "max_band": "Low"})
+
+# LK-T4 — festive spike: bigger payments to KNOWN merchants, hours apart -> never High
+customer("C024", "Anil Joshi", "7 Mall Rd", "Lucknow")
+history_logins("C024", "DEV-C024")
+small_history("C024", ["SHOP-1", "SHOP-2", "SHOP-3"], [2000, 3500, 5000, 2500, 4000, 3000, 4500, 2200])
+for i, shop in enumerate(["SHOP-1", "SHOP-2", "SHOP-3"]):
+    txn(f"T-C024-FEST{i}", "C024", D + timedelta(days=13, hours=10 + 3 * i), 12000, shop)
+    expected.append({"id": f"LK-T4-{i}", "unit_type": "transaction", "entity": f"T-C024-FEST{i}",
+                     "max_band": "Medium"})
+
+# AP-T2 — one customer applies for two different products in a month, own device and phone -> no alert
+customer("C025", "Sara Khan", "11 Hill St", "Bhopal")
+history_logins("C025", "DEV-C025")
+for n, product in enumerate(["personal_loan", "credit_card"]):
+    apps.append({"application_id": f"APP-C025-{n}", "customer_id": "C025", "product": product, "amount": "100000",
+                 "timestamp": iso(D + timedelta(days=14 + 10 * n, hours=11)), "device_id": "DEV-C025",
+                 "ip": "10.60.0.1", "phone": "9800000025", "email": "c025@example.com", "status": "submitted",
+                 "disbursement_account": "A-C025"})
+    expected.append({"id": f"AP-T2-{n}", "unit_type": "application", "entity": f"APP-C025-{n}", "no_alert": True})
+
+# G5 — monthly payroll: five transfers within minutes to the SAME employees every month -> benign context wins
+customer("C021", "Mehta Traders", "9 Market Yard", "Surat")
+history_logins("C021", "DEV-C021")
+for m in range(7):
+    for e in range(5):
+        txn(f"T-C021-PAY{m}-{e}", "C021", BASE + timedelta(days=30 * m, minutes=2 * e), 30000, f"EMP-{e}")
+expected.append({"id": "G5-payroll", "unit_type": "transaction", "entity": "T-C021-PAY6-4", "max_band": "Low"})
+
+
+# G12 / F04 — loan-to-mule: C011's flagged application is disbursed, then 80% leaves to new recipients in 6h -> High
+disb = D + timedelta(days=9, hours=10)
+txns.append({"txn_id": "T-C011-DISB", "sender_account": "LENDER-POOL", "timestamp": iso(disb), "amount": "300000",
+             "currency": "INR", "type": "loan_disbursement", "channel": "internal", "beneficiary_account": "A-C011",
+             "beneficiary_name": "Neha Gupta", "status": "success", "application_id": "APP-C011"})
+for i in range(3):
+    txn(f"T-C011-OUT{i}", "C011", disb + timedelta(hours=2 * (i + 1)), 80000, f"MULE-{i}")
+expected.append({"id": "G12-mule", "unit_type": "transaction", "entity": "T-C011-OUT2", "band": "High",
+                 "category": "loan_application_fraud"})
+
+# G12 benign pair — C016's ordinary loan pays a long-standing supplier -> no loan-mule chain
+small_history("C016", ["SUPPLIER-16"], [150000, 160000, 155000, 150000, 158000, 152000])
+disb16 = D + timedelta(days=10, hours=15)
+txns.append({"txn_id": "T-C016-DISB", "sender_account": "LENDER-POOL", "timestamp": iso(disb16), "amount": "200000",
+             "currency": "INR", "type": "loan_disbursement", "channel": "internal", "beneficiary_account": "A-C016",
+             "beneficiary_name": "Amit Verma", "status": "success", "application_id": "APP-C016"})
+txn("T-C016-SUP", "C016", disb16 + timedelta(hours=3), 170000, "SUPPLIER-16")
+expected.append({"id": "G12-benign", "unit_type": "transaction", "entity": "T-C016-SUP", "max_band": "Low",
+                 "no_chain": True})
+
+
 def write(name, rows):
     with open(OUT / f"{name}.csv", "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        fields = list(dict.fromkeys(k for row in rows for k in row))
+        w = csv.DictWriter(f, fieldnames=fields)
         w.writeheader()
         w.writerows(rows)
 

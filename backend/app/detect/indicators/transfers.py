@@ -3,7 +3,7 @@
 import pandas as pd
 
 from app.detect.config import RulesConfig
-from app.detect.dataset import Dataset
+from app.detect.dataset import Dataset, is_inbound
 from app.features.profiles import baseline_rows
 from app.schemas import Category, Signal
 
@@ -58,9 +58,11 @@ def transfer_signals(ds: Dataset, cfg: RulesConfig, profiles: pd.DataFrame) -> l
 
     window = pd.Timedelta(minutes=p4.get("minutes", 60))
     fan_window = pd.Timedelta(hours=p5.get("hours", 24))
-    by_customer = {cid: g.sort_values("seq") for cid, g in txns.groupby("customer_id")}
+    kinds = txns["type"] if "type" in txns else pd.Series([None] * len(txns), index=txns.index)
+    outbound = txns[[not is_inbound(k) for k in kinds]]
+    by_customer = {cid: g.sort_values("seq") for cid, g in outbound.groupby("customer_id")}
 
-    for _, t in txns.sort_values("seq").iterrows():
+    for _, t in outbound.sort_values("seq").iterrows():  # incoming credits are never scored as outgoing risk
         prof = profiles.loc[t["txn_id"]]
         amount, cur = float(t["amount"]), t.get("currency")
         median = prof["prior_median"]
@@ -80,7 +82,7 @@ def transfer_signals(ds: Dataset, cfg: RulesConfig, profiles: pd.DataFrame) -> l
         if cfg.enabled("TX-03") and prof["is_new_payee"] is True:
             out.append(_signal(cfg, "TX-03", t, f"First payment to beneficiary {t['beneficiary_account']}"))
 
-        own = by_customer[t["customer_id"]]
+        own = by_customer.get(t["customer_id"], outbound[outbound["txn_id"] == t["txn_id"]])  # unresolved: itself only
         recent = own[(own["seq"] <= t["seq"]) & (own["timestamp"] >= t["timestamp"] - window)]
         if cfg.enabled("TX-04") and len(recent) >= p4.get("count", 5):
             mins = int(window.total_seconds() // 60)
