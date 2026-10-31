@@ -1,5 +1,164 @@
 # Stage 01 Plan — Digital Fraud Investigation System
 
+## 0. Revision 4: executable plan for a strict 120-minute deadline
+
+Reviewed 2026-10-31. **This section controls the build scope, priorities, timing and corrections wherever older sections or other planning documents disagree.** Earlier design detail remains below for reference; its wall-clock milestones, expanded P0 list and cloud rollout are superseded. T+0 is the start of the remaining build window, not 11:30. Documentation changes are proposals, not implemented features or passed tests.
+
+**Decision:** deliver upload -> validate/link -> detect -> explain risk -> dashboard -> case decision, locally, within two hours. Implement suspicious loan applications as the mandatory additional scenario. Reuse that same data to demonstrate identity reuse and lending-to-banking links. Only after the required journey passes, add one temporal money-flow extension. Creative value comes from combining evidence, testing innocent alternatives, and explaining the intervention point, rather than counting rules.
+
+### 0.1 Official requirements and proof of completion
+
+Source: `ProblemStatement-Stage-1.pdf`, visually reviewed pages 1-5. The larger pack repeats challenge 1; challenges 2-7 concern regulation, recommendations, credit warning, service voice, collections voice and claims leakage. They are not additional requirements for our submission.
+
+**Two different lists must not be confused:** pages 2-3 describe the broader identity, device-sharing, ATO and cross-system fraud catalogue. Page 4 explicitly lists the Level 1 minimum behaviours: suspicious transfers, shared devices, repeated login failures and legitimate lookalikes, plus one additional scenario. Cover the broader catalogue cheaply through exact identity links and the loan scenario, without claiming that all identity/media/insurance capabilities are mandatory Level 1 implementations.
+
+| ID | Official requirement | Required observable proof | Owner |
+| --- | --- | --- | --- |
+| R1 | p4: upload/select customer/account, transaction and device/login data; CSV, Excel, JSON | Upload CSV customers/accounts, XLSX transactions, JSON logins; display accepted records from each | A/C |
+| R2 | p4: validate, identify missing mandatory information, never silently ignore invalid data | Dirty fixture produces file/row/field/reason; accepted + rejected + skipped equals input rows | A |
+| R3 | p4: common structure, links through customer/account/application/device identifiers | Alert evidence joins login -> customer -> account -> transaction; loan -> customer/device/account | A/B |
+| R4 | p4: suspicious transfers | Unusual amount relative to prior history, velocity and new beneficiary have working rules | B |
+| R5 | p4: shared devices, assess suspicious relationship | Suspicious shared-device group alerts; ordinary family sharing does not become High | B |
+| R6 | p4: repeated failures, especially subsequent success/sensitive activity | Failure burst detected; ordered new-device success then transfer receives higher risk | B |
+| R7 | p4: legitimate lookalikes | Regular large payment, ordinary shared device, password recovery without payment have expected lower risk | B/C |
+| R8 | p4: at least one additional scenario | Suspicious loan application has its own category, evidence and actionable case; not just a renamed shared-device alert | B |
+| R9 | p4: multi-indicator risk, numeric 0-100 and/or bands, explained | Explain matched facts and mitigating context; regular large payment Low versus ATO High | B/C |
+| R10 | p4: processed/flagged counts, risk distribution, fraud categories; six filters | Customer, transaction, product, risk, date, detection type all work on real results | C |
+| R11 | p5: alert event, reasons, supporting records | Open alert and inspect source rows, IDs and ordered timeline | A/C |
+| R12 | p5: actionable alert case, ID, affected entity, category, risk, evidence, status; decisions preserved separately | Record Requires Investigation then False Positive; original alert unchanged, both decisions retained | A/C |
+| R13 | p1/p5: working end-to-end submission; synthetic/anonymised data, no unsupported AI claims | Fresh local start, full demo with network/LLM unavailable; describe rules honestly | All |
+
+The official brief allows rules, statistics, ML or combinations. An LLM, graph database, autonomous agents, cloud deployment and production payment blocking are not prerequisites. Organiser schemas/hidden tests are mentioned but their actual contents are unavailable here; hidden-test expectations remain hypotheses. The old 6 PM submission note is not established by these five PDF pages and does not extend the user's 120-minute limit.
+
+### 0.2 What actually fits
+
+Assumption: three available human workstreams as in `OWNERSHIP.md`; A and C still need named owners. This is an aggressive budget, not a guarantee. Existing working code may be reused only after a quick runnable check. No Nora service dependency is assumed.
+
+| Build now (P0) | Conditional single extension (P1) | Defer beyond two hours |
+| --- | --- | --- |
+| FastAPI + SQLite + existing React/Vite UI approach; one canonical store | AP-03 loan disbursement -> rapid onward movement, rendered as an evidence table | Neo4j, vector DB, LangGraph, streaming, ML training, multimodal/deepfake classifiers |
+| Explicit entity selector, exact aliases, visible row validation; CSV/XLSX/JSON | Maximum ten minutes, only if R1-R13 pass by T+95 | Fuzzy schema inference, rules editor/backtesting UI, automated entity merging |
+| TX-01, TX-03, TX-04, HV-01; DV-01/02/03; LG-01/02/03; AP-01; basic exact ID-01; MT context | Prefer this extension to graphs or chat: reuses loan, account and transfer records | Isolation Forest, 5k/250k data generators, calibrated probability claims, cloud migration |
+| Scores, evidence, all six filters, immutable alerts and two decisions | If AP-03 data is unavailable, spend the time on robustness; do not invent a disbursement | Duplicate-claim pipeline, insurer/provider analytics, live integrations, automatic holds |
+| Small committed synthetic fixtures with positive/negative pairs; template explanations | No second extension | Multi-hop graph UI, PDF case export, full customer 360, extra case statuses |
+
+AP-01 is the mandatory extra scenario, not an optional stretch. Basic identity detection is an exact shared-contact/identity-conflict check attached to a device/application cluster, not a new identity-resolution subsystem. Cross-system coverage in P0 is a lending application linked to bank/customer/device evidence; the complete loan-to-cash-out chain is P1. Insurance correlation remains an explicit coverage gap until insurance data and a detector exist.
+
+### 0.3 Minute-by-minute execution and hard gates
+
+| Elapsed | A: ingestion/store/cases | B: detection/risk | C: UI/dashboard/demo | Gate |
+| --- | --- | --- | --- | --- |
+| 0-10 | Lock minimal schemas, aliases and API examples | Lock signal/result types and paired fixtures | Start UI and confirm API calls | Assign A/C, app boots; no architecture debate after minute 10 |
+| 10-30 | Three parsers, SQLite and rejection report | Transaction/login rules on fixtures | Upload and alert/detail/queue shell | One real uploaded file visible by T+30 |
+| 30-55 | Linking, immutable alert insert, case decision API | Device/context/AP-01/ID-01, scoring | Dashboard counts, six filters, detail evidence | First full real upload-to-decision path by T+55 |
+| 55-80 | Duplicate/conflict handling, cross-file joins | ATO/benign calibration; missing-data outcomes | Replace remaining mocks; decision history | Mandatory scenarios runnable by T+80 |
+| 80-95 | Dirty files, restart persistence | Paired tests, temporal ordering, rerun stability | All R1-R13 checks and fixes | No P1 unless every gate passes |
+| 95-105 | Help fix defects or supply explicit disbursement link | Optional AP-03 only if green | Optional flow evidence table | Feature freeze at T+105 |
+| 105-115 | Fresh database/startup rehearsal | Final fixtures and rule version recorded | Rehearse five-minute demo | Repeatable run, no external services needed |
+| 115-120 | Package code and run instructions | Record actual pass/fail results | Save demo evidence and submit | Hard stop at T+120 |
+
+If T+30 slips, drop fuzzy mapping, elaborate styling and all P1 immediately. If T+55 slips, all three focus on integration; keep mandatory formats, cases and the extra scenario. If T+80 slips, use the simplest evidence tables and fixed config instead of charts/editors. Do not present an incomplete mandatory capability as complete. If fewer people are available, re-estimate at T+0 and report the risk; do not quietly assume six person-hours of work can fit into two.
+
+### 0.4 Correctness changes to apply before coding
+
+1. **No future leakage:** all baselines, device novelty, contacts, clusters and chains use records at or before the scoring cutoff; the event being scored is excluded from its own history. HV-01 uses a configured per-currency threshold or p90 of prior successful outbound events in that currency, never all loaded transactions. Do not compare INR and USD together. Balance drain requires the balance immediately before the payment; unknown/post-payment balance means skip that feature.
+2. **History uncertainty:** keep observed novelty as a fact but disable standalone novelty points below five prior relevant events. An independently supplied device-change event can still support ATO. First-seen-in-file is not proof of a genuinely new device. No usable baseline means `insufficient_history`, not a declaration of safety. Peer fallback also uses prior same-currency data only.
+3. **Correlated rules:** TX-01 and TX-02 measure the same amount abnormality; implement only TX-01 in P0. Group related signals and use the maximum weighted strength within each family before combining families. Phone formatting variants are one fact, not multiple independent identity signals.
+4. **ATO order:** failures precede a successful login whose device is new; that success is the new-device event, not a separate later timestamp. Sensitive change/payment follows it within the configured window. Equal timestamps need a trustworthy source sequence, otherwise order is unresolved. A payment before the login cannot complete the chain. Use one configurable chain window (initially 30 minutes for the demo); retain the evidence timestamps.
+5. **ATO calibration:** new-device success + failure burst + high-value transfer gives a floor of 85. Recovery/new phone without payment or beneficiary change remains at most Medium. Remove the old automatic High floor for any payment after login failures: an ordinary payment from the usual device is not sufficient. A suspicious beneficiary-change chain needs corroborating access-context evidence for High.
+6. **Mitigation:** same surname/address is only possible household context, not verified kinship. Shared IP can be an office/NAT; missing names/addresses mean unknown. Established regular behaviour may reduce risk, but must not erase a corroborated takeover chain. Mere login failures alone do not suspend all mitigations.
+7. **Linking:** exact sender-account -> customer link first. Nearest prior login is a time-based inference, not proof that its device initiated a payment. Show `derived` and any competing session; do not use an ambiguous derived link to assert a confirmed ATO chain. No guessed joins by similar names.
+8. **Reruns:** identity of a run is dataset snapshot hash + rules version + cutoff. Same completed run returns its existing result; it must not create an empty latest run after skipping all alerts. New versions create immutable snapshots and reuse a case by stable incident key. Show the latest completed run for the selected dataset, retaining older evidence. Device clusters/bursts have a fixed window key; member changes do not generate arbitrary case identities.
+9. **Scope and data quality:** unknown fields/absent feeds are visible. Store `evaluated`, `skipped_missing_data`, `insufficient_history`, `unresolved_link` independently of risk. Missing login data is not evidence of a clean login. A bad feed is an operational/data-quality issue unless separate evidence establishes abuse.
+10. **Audit safety:** keep SQLite update/delete protection on original alerts and append-only decisions. Drop the public table-dropping `/api/admin/reset` endpoint; use a separate disposable local demo database for rehearsals. Production controls and Postgres trigger parity are deferred.
+
+### 0.5 Minimum data and scoring contract
+
+Keep existing endpoint/type names in section 3.7 where practical; implement only ingest, demo load, records, detect, dashboard, alert list/detail, case list/detail and case decision for P0. No rules/graph/AI/admin endpoints are needed. File-based `rules.yaml` plus stored version/hash is enough for configurable deterministic rules.
+
+| Entity | Minimum usable data | Optional context / limitation |
+| --- | --- | --- |
+| Customer/account | customer_id; account_id -> customer_id | Contacts, onboarding, identity token, household verification; all IDs strings |
+| Transaction | txn_id, sender_account, beneficiary_account, timestamp, amount, currency, status | Channel/product; session/device if explicitly supplied; no FX guessing |
+| Login/event | event_id or stable generated ID, customer/account reference, timestamp, outcome/event_type | device_id, IP, location; missing device disables new-device inference |
+| Application | application_id, customer_id, timestamp, product | device/contact and payout account; AP-01 needs sufficient linked attributes |
+| Provenance | dataset/batch, source system/file/sheet/row, raw record, event and ingestion time | Preserve raw fields beside normalized values |
+| Detection result | unit/incident key, cutoff, rule version, score/band, category, reasons, evidence, coverage status | Direct/derived relationship labels; proposed protective action |
+
+Import unresolved parent references with warnings; rerun linking when parents arrive. Exact duplicate row is skipped and counted; same key with different content is a conflict, not an overwrite. Invalid amount/date/mandatory key is quarantined with a reason. Keep labels such as `is_fraud` in the evaluation fixture manifest, never as detector inputs. Keep explicit supported date/timezone conventions; ambiguous dates require mapping or a visible rejection.
+
+Use the existing noisy-OR formula over independent signal families: `raw = 100 * (1 - product(1 - family_strength))`; apply bounded contextual mitigation, then applicable chain floor, clamp to 0-100. Low <40, Medium 40-69, High >=70. These are prototype ranking scores, not fraud probabilities. Clamp strengths below 1; zero active signals means zero contribution, not division by zero. Show risk contributions summing to raw, negative mitigation, floor adjustment and final score. Group contributions make double-counting visible.
+
+Scoring units remain transaction, login burst, device/identity cluster and application. Link a burst to its payment incident when present; preserve the burst evidence. Every evaluated unit can have a Low result, but actionable Medium/High alerts create cases. Dashboard distinguishes accepted source rows, evaluated units and flagged incidents; they are different denominators. Show low-risk lookalikes in results even when no alert was raised. Risk distribution is explicitly labelled by evaluated unit; fraud-category counts need not sum to incident count if multi-label categories are used.
+
+Initial detector parameters (configurable hypotheses, validate on fixture pairs): failure burst >=5 in 10 minutes; transfer velocity >=5 in 20 minutes; shared device >=3 distinct customers; loan cluster >=3 applicants in 72 hours. Counts alone are not High: require independent behavioural/identity corroboration. AP-01 uses multiple applicants + common device plus shared contact/payout or identity conflict; same office IP/employer alone stays Low. A compact identity-conflict rule surfaces inconsistent DOB for the same supplied identity token as a review reason, without declaring synthetic identity proven.
+
+### 0.6 Creative fraud catalogue: observable evidence and how to interrupt it
+
+These are proposed, testable scenarios, not claims of observed fraud or implemented detection. The existing research section 32 contains 32 broad families; this shortlist turns the most useful ones into build decisions and adds compound variants. Every detector needs a benign pair and a missing-data test. Controls below are recommendations displayed in a case; any simulated action is labelled **simulation**. The prototype does not actually stop bank payments.
+
+| Pattern / priority | Evidence and proposed detection | Innocent alternative / missing evidence | Protective response to recommend |
+| --- | --- | --- | --- |
+| F01 Identity stitching / P0 basic | Conflicting identity attributes or repeated contact across distinct profiles, corroborated by shared device and loan activity | Family contact, data-entry error; no proof of forged documents | Independently reverify identity and account ownership before loan approval |
+| F02 Shared-device loan swarm / P0 extra | >=3 applicants in 72h, same device plus contact/payout overlap; separate application-category alert | Assisted branch applications; legitimate shared employer/IP | Review linked applications together; verify each borrower and payout owner |
+| F03 ATO journey / P0 | Failure burst -> new-device success -> unusual/high-value transfer or suspicious payee change | Forgotten password, replacement phone, ordinary follow-up payment | Verify via established independent channel; propose session revocation and payment review |
+| F04 Loan-to-mule funnel / first P1 | Explicit application/disbursement/account link, then >=70% aggregate successful outflow in 48h plus new recipient/network evidence | Loan used to pay a genuine supplier; current balance is not disbursement amount | Payout ownership review and receiving-account investigation; suggest hold only before settlement |
+| F05 Recipient convergence despite different devices / later | Several apparently unrelated borrowers pay the same new recipient shortly after funding | Dealer/merchant collection account; device independence does not prove innocence | Verify recipient business purpose; group linked cases instead of only device alerts |
+| F06 APP scam with a normal login / later | Usual device and successful authentication, but unusual new-payee payment plus recipient complaints or independent risk facts | Legitimate first-time purchase; absence of complaints is unknown, not clean | Contextual scam warning and independent callback; step-up login alone may not prevent authorised deception |
+| F07 Recovery/contact substitution / later | Recovery/contact change -> changed access -> new payee/payment | Customer moved or replaced phone; requires profile-change feed | Confirm through previously verified channel, not the just-changed phone/email; cooling period |
+| F08 Trusted supplier, changed destination / later | Same vendor identity/invoice context but bank account changed before payment | Legitimate bank migration; needs versioned payee/vendor records | Independent callback and dual approval of bank-detail changes |
+| F09 Dormant account awakening / later | Long observed inactivity -> access/context change -> new-recipient transfer burst | Seasonal business, resumed account use; short file history cannot establish dormancy | Review access and purpose; targeted verification before sensitive transfers |
+| F10 Slow cumulative drain / later | Individually modest payments but rolling cumulative outflow/new-payee concentration diverges from prior history | Tuition instalments or recurring bills; require sufficiently long history | Aggregate exposure review and customer confirmation rather than one-payment threshold |
+| F11 Temporal circular flow / later | A -> B -> C -> A ordered same-currency transfers with repeated timing/value pattern | Treasury sweep, refund, settlement | Source/purpose verification; preserve paths; do not sum repeated hops as new loss |
+| F12 Loan-and-claim bridge / later | Borrowers and claimants share payout recipient plus corroborating device/document links across products | Same legitimate provider or broker; requires claim/policy feed | Joint lending/insurance review and independent payout-ownership verification |
+| F13 Reused claim invoice / later | Same invoice/incident/entity across distinct claims; detect exact structured duplicates first | Instalments, correction/resubmission, routine repeated treatment | Verify original invoice and settlement status before further payment |
+| F14 Claim-provider cluster / later | Repeated claimant-provider-payee relations with abnormal billing versus comparable providers | Large specialist hospital; volume alone insufficient | Sample audit with provider/service context; no automated denial |
+| F15 Collateral reused across identities / later | Same asset identifier in overlapping active loans with inconsistent claimed ownership | Refinance or released security; needs asset/loan lifecycle data | Verify ownership and existing encumbrances before disbursement |
+| F16 Income evidence mismatch / later | Declared income/employer inconsistent with observed credits plus repeated document/contact patterns | Cash income, missing bank accounts, job change | Independent employer/income verification; absence of salary is not proof of fraud |
+| F17 Refund destination pivot / later | Refund bank differs from original payer and follows profile change, across repeated linked orders | Approved refund exception; requires original-payment/refund references | Return to original instrument or obtain independently reviewed exception |
+| F18 Insider exception concentration / roadmap | Unusual override clusters tied to payout changes, missing second approval and linked recipients | Authorised operational backlog; needs employee/approval audit data | Dual control, restricted audit review and immutable approval records |
+| F19 Feed/control blind spot / P0 visibility, later abuse detection | Missing login feed, duplicate IDs, schema changes or abnormal timestamp gaps | Integration outage; data quality does not establish malicious intent | Coverage warning, quarantine invalid rows, reconcile source counts; never show complete protection |
+| F20 Deepfake-assisted onboarding / roadmap | Trusted liveness/document-provider findings corroborated by identity inconsistency and reuse | Verification error; no media/provider fields in baseline data | Layered identity checks and human review; no claim of deepfake detection from CSV transaction data |
+| F21 False-positive feedback laundering / roadmap | Repeated dismissals by one reviewer tied to recipient cluster despite unchanged evidence | Experienced specialist handling legitimate exceptions | Sample independent review; no automatic allowlisting/retraining from a case decision |
+| F22 Household camouflage / later compound variant | Shared-address/device context looks benign, but independent profiles converge on a payout destination and synchronized borrowing | Genuine family financing; relationship context alone neither convicts nor clears | Keep benign evidence visible while independently verifying each application and recipient |
+
+F04 should compute outflow only after an explicitly linked disbursement and through the evaluation cutoff, excluding failed/reversed transfers and handling refunds consistently. Without provenance, say 'rapid outflow following a credit', not 'stolen loan proceeds'. Fungible balances mean temporal proximity does not prove the exact money's path. External recipients can be nodes without known customer ownership; do not invent it.
+
+For every built scenario show: **observed facts -> suspicious hypothesis -> benign alternative -> missing evidence -> proposed action**. A suggested pre-settlement hold can prevent exposure; a settled payment needs recovery/escalation review. Displaying a recommendation is not evidence that a loss was prevented.
+
+External grounding checked for this review: FinCEN documents deepfake-related fraud against financial institutions ([13 November 2024 alert](https://www.fincen.gov/news/news-releases/fincen-issues-alert-fraud-schemes-involving-deepfake-media-targeting-financial)); it does not validate our detector. FBI guidance supports independent verification of changed payment instructions ([Business Email Compromise](https://www.fbi.gov/how-we-can-help-you/common-frauds-and-scams/business-email-compromise?source=govdelivery)). Remaining catalogue rows are design hypotheses adapted from the supplied research, not prevalence or accuracy claims. Vendor ownership/product-gap assertions in older sections have not been reverified and are not needed in the pitch.
+
+### 0.7 Acceptance fixtures and five-minute demo
+
+Use 12-20 synthetic customers and enough prior records to exercise baselines (roughly 100-300 events). Build fixtures directly before writing a large generator. Keep no-fraud and fraud labels separately. All expected outputs below are targets until executed.
+
+| Test | Pair or mutation | Expected outcome |
+| --- | --- | --- |
+| G1 | Regular high-value supplier payment / identical payment after corroborated ATO | Low / High, with concrete evidence and suspended mitigation reason only in second |
+| G2 | Ordinary family shared device / device plus multi-identity coordinated loan applications | Low / actionable loan and shared-device findings with distinct reasons |
+| G3 | Failure burst alone / failure-success-new-device-payment chain | Low or Medium / High; no per-failure case flood |
+| G4 | Ordinary new phone with reset and no payee/payment / anomalous transfer to new payee | First <=Medium; second shows amount and beneficiary evidence |
+| G5 | Five rapid transfers to new recipients / established scheduled business payments | Burst elevated; benign context reduces unsupported suspicion |
+| G6 | Payment before login attack / payment after | First not ATO; second can match; future events do not change earlier score |
+| G7 | Same office IP/employer alone / corroborated device + payout/contact overlap | First not High; second reviewable application cluster |
+| G8 | No login feed, short history or unresolved account / complete fixture | Explicit coverage limitation versus evaluated result; never silently safe |
+| G9 | CSV/XLSX/JSON versions and dirty variants | Same logical detections; invalid rows explained, IDs preserve leading zeros |
+| G10 | Same files/run twice, then case decisions, then restart | Stable counts/case IDs; original alert unchanged; decision log persists |
+| G11 | Shuffle rows, add future rows or duplicate amount indicator | No order/future leakage or double-counting inflation |
+| G12 | Optional F04 / ordinary loan-funded supplier payment | Flow alert requires corroboration; benign payout remains explained |
+
+Also check all six filters individually and together, score bounds/contribution sums, live KPI reconciliation and original-alert immutability. `EVALUATION.md` remains the extended test library, but its clock times, dataset sizes, score targets and conflicting rules are superseded by this section. Report actual test counts and synthetic scope, not unmeasured precision/recall or production accuracy. Separate newly added tests from legacy tests whose expectations need correction.
+
+Demo: (0:00-0:45) upload mixed formats and show a dirty row; (0:45-1:30) compare ordinary high payment with ATO; (1:30-2:15) family device versus loan swarm and identity evidence; (2:15-3:00) filters and source-record timeline; (3:00-4:00) case decisions and preserved alert; (4:00-5:00) rerun stability, coverage limitation and F04 only if implemented. Change an input or use the paired fixture so judges see recomputation. Proposed action card explains how intervention could work without claiming live blocking.
+
+**Submission gate:** R1-R13 demonstrated, fixture results recorded, reproducible local start command/README, original alert preserved, all advertised features actually working. Package by T+120; no new features after T+105.
+
+---
+
+
+## Historical design detail (Revisions 1-3; subject to section 0)
+
+
 Date: 2026-10-31 · Source: `Docs/ProblemStatement-Stage-1.pdf`
 
 **Bottom line:** Ship Level 1 as one working path, ingest → detect → score → alert → case, by about 14:00. Build it on an explainable, entity-centric risk engine that can grow into the later levels without a rewrite. We win on three things: robust ingestion (hidden tests), explanations that show both why risk went up *and* why it went down (the "legitimate lookalikes" requirement), and an identity graph that reveals coordinated fraud.

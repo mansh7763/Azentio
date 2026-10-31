@@ -1,57 +1,79 @@
-# Suggestions for the Stage 01 Plan
+﻿# Suggestions for the Stage 01 Plan - Review 3 / Revision 4
 
-Date: 2026-10-31 · Reviews: `Docs/STAGE1_PLAN.md` Revision 2 against the Digital Fraud Investigation System brief (challenge 1 in `Docs/All problem Statements.pdf`, same text as `Docs/ProblemStatement-Stage-1.pdf`)
+Reviewed: 2026-10-31. Controlling delivery constraint: **120 minutes from build start**.
 
-**Bottom line:** All 19 suggestions from the first review are applied, so this file now lists only what is still open. Fix items 1–5 before coding. Items 1 and 5 change `schemas.py`, so lock those first. Items 16–24 cover deployment.
+**Recommendation:** implement the official upload-to-case journey first, including suspicious loan applications as the additional scenario. Show identity reuse and cross-system links using those same records. Add loan-to-mule flow detection only after all mandatory checks pass. The detailed execution plan and fraud catalogue are in [STAGE1_PLAN.md, section 0](STAGE1_PLAN.md#0-revision-4-executable-plan-for-a-strict-120-minute-deadline).
 
-**Scope:** The team is working on challenge 1 only. The other six challenges in the pack are out of scope. The pack's fraud section covers Level 1 only, so section 1.4's view of later levels remains a guess.
+Changes below are applied to the planning document, **not to application code**. No application tests or fraud-performance benchmarks were executed in this document review. Older reviews remain in git history; the earlier plan is retained as clearly labelled historical design detail.
 
-## Fix before coding
+## What the document review found
 
-| # | Plan ref | Problem | Fix |
-| --- | --- | --- | --- |
-| 1 | 3.5, 3.4 step 3 | The scoring unit is undefined. "Every event" gives five alerts for one failed-login burst and an alert for each login on a shared device. Login signals and transfers are separate events, so an ATO chain never lands in one score | Define the scoring units: transaction, login burst, device cluster and application. Attach login and device signals from the window to the transaction as context |
-| 2 | 3.4 step 5 | Contribution lines do not sum to the final score, because risk lines already total it before mitigation and floor lines are added. Final 20 with −30 damping gives −10; final 85 with a +45 floor gives 130. This came from the wording of the earlier suggestion #6 | Risk line = `undamped × cᵢ/Σc`; mitigation = `damped − undamped`; floor = `final − damped`. Clamp `wᵢsᵢ` below 1 to avoid `ln(0)` |
-| 3 | 3.3 point-in-time rule, TX-03, DV-03 | With point-in-time features, each customer's first device and first beneficiary count as "new", which floods a short dataset with false positives | Skip TX-03 and DV-03 when history is short (e.g. fewer than 5 prior events). Do not treat the onboarding device as new |
-| 4 | 3.4 step 3 | The partial ATO floor of 70 makes a legitimate user High: forgot password, failed attempts, reset, login from a new phone, with no money moved | Set the partial chain floor to Medium (e.g. 55). Require a beneficiary change or transfer for High. Add this case to the golden dataset, expecting Medium or lower |
-| 5 | 3.5 | A rule change makes a re-run write a new alert for every event, so the dashboard double-counts and duplicate cases open. The trigger also blocks only `UPDATE` | The dashboard reads the latest run only. A new alert for the same event attaches to the existing case. Add a `BEFORE DELETE` trigger and a separate demo reset path |
-
-## Smaller fixes
-
-| # | Plan ref | Problem | Fix |
-| --- | --- | --- | --- |
-| 6 | 3.4 step 3 | Chains only say "within 24 h", so a transfer before the login would also match | Enforce the order: failed logins → new device → transfer |
-| 7 | 3.3 HV-01 | A fixed absolute threshold breaks on unknown currencies and scales | Default to a value derived from loaded data, e.g. p90 of outbound amounts |
-| 8 | 3.3 DV-02 | Anonymised data may have no name or address, so the household check cannot run | Return a neutral result and show "assessment unavailable" |
-| 9 | 3.3 mitigation suspension | DV-03 alone suspends mitigation, which penalises a regular payer with a new phone | Suspend only when an LG signal is active |
-| 10 | Section 5, workstream A and integration rules; `Docs/OWNERSHIP.md`; `.github/workstreams.json` | The dashboard endpoint moved to C, but A's modules still list it, and `backend/app/api/` belongs to A in the ownership map, so C's edit raises an overlap warning | Remove it from A's list and give C an explicitly owned file for the endpoint, in all three places |
-| 11 | Workstream A, section 6 | Generator v1 is due at 12:15 in one place and 12:00 in the other | Use one time |
-| 12 | Section 4 P0 | HV-01 is missing from the P0 indicator list, though the ATO chain depends on it | Add it |
-
-## Before starting
-
-| # | Item | Action |
+| Document | Finding | Decision |
 | --- | --- | --- |
-| 13 | `Docs/OWNERSHIP.md` names an owner for B only. A and C are blank, and all three stay blank in the plan | Fill in the names, and add each member's git email to `.github/workstreams.json` |
-| 14 | `requirements.txt` has only PDF-reading libraries | Replace it with the app stack from section 5, in `backend/requirements.txt` with the Python version pinned |
-| 15 | Deleting `GAME_PLAN.md` removed the 6:00 PM HackCulture submission deadline from the repo | Add one line about it to the plan |
+| `ProblemStatement-Stage-1.pdf` | Five pages specify a working end-to-end system, four minimum Level 1 behaviours and one additional scenario; broader fraud catalogue is on pp2-3 | R1-R13 in the plan map requirements to observable proof and owner |
+| `All problem Statements.pdf` | Challenge 1 repeats the fraud scope; other challenges concern regulation, offers, early warning, service voice, collections voice and claims leakage | Do not import their capabilities into our mandatory scope; claims leakage supplies future ideas only |
+| `STAGE1_PLAN.md` revisions 1-3 | Good evidence/case design, but too many P0 indicators, larger datasets, expired wall-clock milestones and cloud work | Section 0 supersedes scope/timing; use local SQLite and small fixtures, freeze features at T+105 |
+| Research / `FRAUD_THREAT_EXPANSION.md` | Useful 32-family threat catalogue and benign alternatives; early sections propose an alert-first agentic MVP and a broad service stack | Use section 32 for hypotheses; do not replace ingestion/detection with an existing-alert copilot; no agent orchestration or new service stack in two hours |
+| `EVALUATION.md` | Valuable test library but ambitious synthetic/scale metrics and some outdated expectations | Use G1-G12 plus R1-R13 as the timeboxed gate; retain extended tests for later |
+| `OWNERSHIP.md` | B is named; A and C are blank; shared-file ownership matters | Assign A/C at T+0; retain folder ownership and one editor for shared types |
 
-## Deployment
+The official minimum table's fourth row is **legitimate lookalikes**, not a fourth fraud category. Research sections 22/26/27 blur broader catalogue goals with minimum behaviours. Our plan covers identity/cross-system context with exact links while explicitly deferring advanced media, insurer and multi-hop implementations. The brief permits rules/statistics/ML; no requirement forces an LLM.
 
-**Decision:** frontend on Vercel, backend on Render, database on Aiven Postgres when deployed. Local development stays on SQLite, so each person keeps their own data and work continues if the venue network fails. Do not put the backend on Vercel: its serverless functions do not suit a local database file, file uploads or a long detection run.
+## Corrections applied to the plan
 
-The Level 1 scope and timeline do not change. Do items 16–18 during the scaffold. The rest can wait until after Level 1.
-
-| # | Plan ref | Change |
+| Priority | Issue in earlier material | Required implementation change |
 | --- | --- | --- |
-| 16 | Section 3 diagram, 3.1 | Replace "SQLite" with: SQLite locally, Aiven Postgres when deployed, selected by `DATABASE_URL`. The Aiven connection needs `sslmode=require` |
-| 17 | Section 5 integration rules | Read all config from the environment: `DATABASE_URL`, `GROQ_API_KEY` and the CORS origins. List these names in `.env.example`, with no real values. Run Uvicorn on `$PORT` |
-| 18 | 3.3 | Keep `rules.yaml` as defaults only and save UI rule edits in the database, or a restart loses them |
-| 19 | 3.5 | Write the immutability triggers for both databases (`BEFORE UPDATE` and `BEFORE DELETE`), selected by `engine.dialect.name`. Postgres needs a trigger function |
-| 20 | Section 5, workstream A | Add `psycopg` to the backend dependencies. Insert rows in batches, since row-by-row inserts over the network are slow. Load the demo data on startup when the database is empty |
-| 21 | Section 5, workstream C | Read the API base URL from `VITE_API_URL`. Add a `vercel.json` SPA rewrite so a page refresh does not return 404 |
-| 22 | Section 6 | Add "deploy to Vercel, Render and Aiven" to the After L1 row, for whoever owns it |
-| 23 | Section 7 | Add a risk: Aiven or the venue network goes down. Fallback: SQLite with the demo data |
-| 24 | New section | Add a short deployment section covering the three services, the environment variables and the submission deadline from item 15 |
+| P0 | Whole-file high-value p90 leaks future events; pooled currencies distort amounts | Prior successful same-currency baseline or configured threshold; pre-payment balance only |
+| P0 | TX-01 and TX-02 count the same anomaly twice | Keep TX-01 only in P0; max within correlated signal families before noisy-OR |
+| P0 | ATO sequence treats successful new-device login as two sequential events | New-device attribute belongs to success; require subsequent sensitive event with reliable ordering |
+| P0 | Any transfer after failures gets High; every failure disables all mitigation | Require corroborating access-context evidence for a High chain; ordinary follow-up payment is not sufficient |
+| P0 | First observed device/payee is assumed genuinely new | Short-history status; only observed facts; explicit device-change data can supply additional evidence |
+| P0 | Shared surname/address proves household, nearest login proves transaction device | Mark possible household and inferred links; do not silently infer identity, kinship or session ownership |
+| P0 | Shared device/IP alone opens High loan cases | Separate application-category detector with corroborating contact/payout/conflict or coordinated activity |
+| P0 | Same-rules rerun skips alerts but may publish an empty latest run | Return existing completed snapshot; use latest completed run for selected dataset |
+| P0 | Changing cluster membership can generate duplicate cases | Stable window/incident keys; retain immutable per-run evidence and attach to existing case |
+| P0 | Absent data becomes zero risk | Separate coverage status from score; show skipped detectors, unresolved links and short history |
+| P0 | Latest-run aggregates obscure denominators | Separate accepted records, evaluated units and flagged incidents; label risk distribution explicitly |
+| P0 | Original alert protection undermined by public destructive reset endpoint | Omit reset API; separate disposable local demo database; preserve immutable alerts/decisions |
+| P0 | Sixteen-rule build, large generator and integration late in the schedule | Small paired fixtures first, real vertical integration by T+55, all mandatory behaviour by T+80 |
+| P1 | Graph shapes treated as proof of organised fraud | Require temporal and independent corroboration; merchant, payroll, treasury and household alternatives |
+| Later | Product ownership/gap claims and free hosting assumptions not verified | Leave as historical inspiration; make no current vendor deficiency, ownership or hosting promise |
 
-Check the current Vercel, Render and Aiven free-tier limits before deploying, including memory on Render, because pandas and scikit-learn are memory-heavy. These were not verified for this review.
+## Evaluation expectations that must change with implementation
+
+These are explicit corrections to the retained `EVALUATION.md` library; section 0 of the plan has precedence.
+
+- LNK-02: nearby login is **derived**, possibly ambiguous; it does not prove the transfer's device.
+- LNK-06 / DV-T2: matching surname/address means possible household; use independent supplied household context or ordinary behaviour to justify mitigation.
+- TX-T3: two prior payments plus a large amount need not be Medium/High; short history is uncertainty, not proof of fraud.
+- AP-T1: evaluate the cluster at the current cutoff. Earlier applications cannot become High using future applications; a later cluster alert can cite the earlier applications as evidence.
+- RS-P4: monotonicity applies with fixed context/coverage; adding historical data may legitimately change a baseline or mitigation. Test risk-signal changes separately from dataset changes.
+- RS-P5: apply the ATO floor only when the full corroborated temporal chain is present.
+- RS-P8: High requires multiple independent facts, not several correlated rules on one amount.
+- CS-11: new rule version produces a completed result snapshot; identical-run reuse must not empty the dashboard.
+- DB-02: reconcile the stated denominator (evaluated units or alerts); do not mix Low results with actionable alert counts silently.
+- Large D2/D3/D6 datasets, AUC/precision targets, multiple database trigger tests and fixed 13:15/13:35 runs are extended work. They are not claims of achieved performance or prerequisites within this two-hour window.
+
+## Creative additions worth prioritizing
+
+The plan's F01-F22 catalogue gives evidence, missing inputs, benign controls and protective responses. Recommended differentiation order:
+
+1. **Loan swarm with identity reuse (P0 extra):** application evidence makes the shared device meaningful. Compare against legitimate assisted/household applications.
+2. **Loan-to-mule flow (only P1):** connect explicit disbursement to subsequent outflow and recipient evidence; show the timeline without needing a graph UI.
+3. **Recipient convergence despite different devices (later):** catch a common destination when device sharing is absent; compare against a legitimate dealer.
+4. **APP scam with normal authentication (later):** demonstrate why a familiar device does not clear an unusual recipient; requires recipient or customer-context evidence.
+5. **Trusted supplier destination change (later):** monitor bank-account history instead of trusting the vendor display name; compare with verified bank migration.
+6. **Household camouflage (later):** benign relationship evidence must remain visible but cannot automatically clear synchronized borrowing and recipient convergence.
+7. **Coverage blind spot (P0 visibility):** missing login data should visibly reduce coverage; it must not create an assurance that a payment is safe.
+
+Deepfake onboarding, insider collusion, refund pivots, collateral reuse, cross-product claims and feedback manipulation remain useful roadmap scenarios with explicit feed dependencies. Do not advertise working detection without the necessary evidence and implemented tests.
+
+A protective-action recommendation should say who must verify what, using which established source, and at what point intervention could help. No claim of prevention is justified merely by displaying an alert. Independently verifying changed payment instructions follows [FBI BEC guidance](https://www.fbi.gov/how-we-can-help-you/common-frauds-and-scams/business-email-compromise?source=govdelivery). Deepfake-related institutional fraud is documented by [FinCEN](https://www.fincen.gov/news/news-releases/fincen-issues-alert-fraud-schemes-involving-deepfake-media-targeting-financial), but CSV transaction rules do not constitute a deepfake detector.
+
+## Immediate handoff
+
+- At T+0 assign A/C, confirm the actual start time, check organiser sample availability and lock the data/API examples.
+- If no organiser samples arrive, use clearly labelled synthetic fixtures and keep schema assumptions explicit.
+- Keep all six dashboard filters, all three formats, one extra loan scenario and preserved alert decisions inside P0.
+- At T+95 start AP-03 only when R1-R13 pass. Otherwise fix defects. Freeze features at T+105.
+- Record actual results, rehearse offline and package by T+120. The older 6 PM note does not extend this budget.
