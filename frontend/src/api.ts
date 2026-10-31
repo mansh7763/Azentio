@@ -10,3 +10,8 @@ export async function api<T>(path:string, options:RequestInit = {}):Promise<T> {
   } catch(error) {if(error instanceof DOMException && error.name==='AbortError') throw new Error('The request timed out. Check the backend and retry.'); throw error;}
   finally {clearTimeout(timer);}
 }
+export async function apiText(path:string):Promise<string> {
+  const response = await fetch(`${base}/api${path}`);
+  if (!response.ok) throw new Error(`Request failed (${response.status})`);
+  return response.text();
+}

@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.ai import router as assistant
 from app.api import alerts, cases, dashboard, records
 from app.config import settings
 from app.db import init_db
@@ -27,5 +28,5 @@ def health():
     return {"status": "ok"}
 
 
-for module in (records, alerts, cases, dashboard, detect, graph):
+for module in (records, alerts, cases, dashboard, detect, graph, assistant):
     app.include_router(module.router, prefix="/api")
