@@ -1,6 +1,6 @@
-# Azentio
+# FinShield
 
-Digital Fraud Investigation System. Plan: `Docs/STAGE1_PLAN.md` (section 0 controls). Owners: `Docs/OWNERSHIP.md`.
+FinShield is our Digital Fraud Investigation System: AI-assisted detection, investigation and case intelligence for banking, lending and insurance (Azentio.ai hackathon). Plan: `Docs/STAGE1_PLAN.md` (section 0 controls). Owners: `Docs/OWNERSHIP.md`.
 
 ## Run
 

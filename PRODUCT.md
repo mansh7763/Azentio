@@ -2,6 +2,10 @@
 
 <!-- impeccable:product-schema 1 -->
 
+## Name
+
+FinShield (Digital Fraud Investigation System). Use "FinShield" in the app header, browser title and deck.
+
 ## Platform
 
 web

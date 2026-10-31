@@ -1,4 +1,4 @@
-# Stage 01 Plan — Digital Fraud Investigation System
+# Stage 01 Plan — FinShield (Digital Fraud Investigation System)
 
 ## 0. Revision 4: executable plan for a strict 120-minute deadline
 

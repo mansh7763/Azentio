@@ -7,7 +7,7 @@ from app.api import alerts, cases, dashboard, records
 from app.config import settings
 from app.detect import router as detect
 
-app = FastAPI(title="Digital Fraud Investigation System", version="0.1.0")
+app = FastAPI(title="FinShield", description="Digital Fraud Investigation System", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
