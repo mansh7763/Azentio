@@ -1,0 +1,349 @@
+{
+  "note": "Synthetic labelled data (evals/generate.py). The model learns how much each existing rule should count on simulated scenarios; it is a calibration of the rules, not a fraud probability and not real-world accuracy.",
+  "train": "D2 (seed 2)",
+  "test": "fresh held-out seed 4",
+  "units": {
+    "train": 1066,
+    "train_fraud": 166,
+    "test": 1018,
+    "test_fraud": 169
+  },
+  "average_precision_test": {
+    "hand_weights": 0.785,
+    "learned_weights": 0.951,
+    "boosted_trees": 0.884
+  },
+  "incident_metrics_test": {
+    "hand_weights": {
+      "recall_medium_plus": 0.893,
+      "recall_high": 0.554,
+      "lookalike_fp_medium_plus": 0.125,
+      "lookalike_fp_high": 0.0,
+      "precision_medium_plus": 0.728,
+      "background_flags_medium_plus": 41,
+      "alerts_medium_plus_per_1k_events": 6.17
+    },
+    "learned_weights": {
+      "recall_medium_plus": 0.893,
+      "recall_high": 0.536,
+      "lookalike_fp_medium_plus": 0.083,
+      "lookalike_fp_high": 0.0,
+      "precision_medium_plus": 0.848,
+      "background_flags_medium_plus": 22,
+      "alerts_medium_plus_per_1k_events": 6.1
+    },
+    "boosted_trees": {
+      "recall_medium_plus": 0.929,
+      "recall_high": 0.5,
+      "lookalike_fp_medium_plus": 0.25,
+      "lookalike_fp_high": 0.083,
+      "precision_medium_plus": 0.787,
+      "background_flags_medium_plus": 16,
+      "alerts_medium_plus_per_1k_events": 7.39
+    }
+  },
+  "thresholds_from_D2": {
+    "logistic": {
+      "medium": 0.4701,
+      "high": 0.97
+    },
+    "boosted_trees": {
+      "medium": 0.8213,
+      "high": 0.9893
+    }
+  },
+  "weights": [
+    {
+      "rule": "MT-KNOWN",
+      "learned_multiplier": 1.51,
+      "direction": "mitigation",
+      "units_in_D2": 472
+    },
+    {
+      "rule": "MT-TENURE",
+      "learned_multiplier": 1.34,
+      "direction": "mitigation",
+      "units_in_D2": 1003
+    },
+    {
+      "rule": "TX-01",
+      "learned_multiplier": 1.29,
+      "direction": "risk",
+      "units_in_D2": 363
+    },
+    {
+      "rule": "TX-03",
+      "learned_multiplier": 1.27,
+      "direction": "risk",
+      "units_in_D2": 505
+    },
+    {
+      "rule": "MT-RECUR",
+      "learned_multiplier": 1.21,
+      "direction": "mitigation",
+      "units_in_D2": 199
+    },
+    {
+      "rule": "MT-OWN",
+      "learned_multiplier": 1.12,
+      "direction": "mitigation",
+      "units_in_D2": 12
+    },
+    {
+      "rule": "MT-PAYEE",
+      "learned_multiplier": 1.12,
+      "direction": "mitigation",
+      "units_in_D2": 215
+    },
+    {
+      "rule": "AP-04",
+      "learned_multiplier": 1.09,
+      "direction": "risk",
+      "units_in_D2": 5
+    },
+    {
+      "rule": "ID-01",
+      "learned_multiplier": 1.09,
+      "direction": "risk",
+      "units_in_D2": 12
+    },
+    {
+      "rule": "ID-02",
+      "learned_multiplier": 1.08,
+      "direction": "risk",
+      "units_in_D2": 4
+    },
+    {
+      "rule": "TX-08",
+      "learned_multiplier": 1.06,
+      "direction": "risk",
+      "units_in_D2": 6
+    },
+    {
+      "rule": "DV-02",
+      "learned_multiplier": 1.02,
+      "direction": "risk",
+      "units_in_D2": 6
+    },
+    {
+      "rule": "MT-HOUSE",
+      "learned_multiplier": 1.02,
+      "direction": "mitigation",
+      "units_in_D2": 4
+    },
+    {
+      "rule": "TX-05",
+      "learned_multiplier": 1.02,
+      "direction": "risk",
+      "units_in_D2": 19
+    },
+    {
+      "rule": "TX-09",
+      "learned_multiplier": 1.02,
+      "direction": "risk",
+      "units_in_D2": 8
+    },
+    {
+      "rule": "AP-01",
+      "learned_multiplier": 1.01,
+      "direction": "risk",
+      "units_in_D2": 8
+    },
+    {
+      "rule": "AP-02",
+      "learned_multiplier": 1.01,
+      "direction": "risk",
+      "units_in_D2": 8
+    },
+    {
+      "rule": "DV-01",
+      "learned_multiplier": 1.01,
+      "direction": "risk",
+      "units_in_D2": 10
+    },
+    {
+      "rule": "NW-02",
+      "learned_multiplier": 1.01,
+      "direction": "risk",
+      "units_in_D2": 4
+    },
+    {
+      "rule": "CHAIN_FLOOR",
+      "learned_multiplier": 1.0,
+      "direction": "floor",
+      "units_in_D2": 8
+    },
+    {
+      "rule": "HV-01",
+      "learned_multiplier": 1.0,
+      "direction": "risk",
+      "units_in_D2": 0
+    },
+    {
+      "rule": "LG-03",
+      "learned_multiplier": 1.0,
+      "direction": "risk",
+      "units_in_D2": 4
+    },
+    {
+      "rule": "DV-03",
+      "learned_multiplier": 0.99,
+      "direction": "risk",
+      "units_in_D2": 12
+    },
+    {
+      "rule": "LG-01",
+      "learned_multiplier": 0.99,
+      "direction": "risk",
+      "units_in_D2": 10
+    },
+    {
+      "rule": "LG-02",
+      "learned_multiplier": 0.99,
+      "direction": "risk",
+      "units_in_D2": 12
+    },
+    {
+      "rule": "TX-07",
+      "learned_multiplier": 0.99,
+      "direction": "risk",
+      "units_in_D2": 2
+    },
+    {
+      "rule": "TX-06",
+      "learned_multiplier": 0.87,
+      "direction": "risk",
+      "units_in_D2": 103
+    },
+    {
+      "rule": "TX-04",
+      "learned_multiplier": 0.86,
+      "direction": "risk",
+      "units_in_D2": 112
+    },
+    {
+      "rule": "NW-01",
+      "learned_multiplier": 0.61,
+      "direction": "risk",
+      "units_in_D2": 181
+    }
+  ],
+  "boosted_tree_importance_D2": [
+    {
+      "rule": "MT-TENURE",
+      "importance": 0.3504
+    },
+    {
+      "rule": "TX-03",
+      "importance": 0.2834
+    },
+    {
+      "rule": "MT-KNOWN",
+      "importance": 0.2381
+    },
+    {
+      "rule": "TX-01",
+      "importance": 0.0738
+    },
+    {
+      "rule": "AP-01",
+      "importance": 0.0
+    },
+    {
+      "rule": "AP-02",
+      "importance": 0.0
+    },
+    {
+      "rule": "AP-04",
+      "importance": 0.0
+    },
+    {
+      "rule": "CHAIN_FLOOR",
+      "importance": 0.0
+    },
+    {
+      "rule": "DV-01",
+      "importance": 0.0
+    },
+    {
+      "rule": "DV-02",
+      "importance": 0.0
+    },
+    {
+      "rule": "DV-03",
+      "importance": 0.0
+    },
+    {
+      "rule": "HV-01",
+      "importance": 0.0
+    },
+    {
+      "rule": "ID-01",
+      "importance": 0.0
+    },
+    {
+      "rule": "ID-02",
+      "importance": 0.0
+    },
+    {
+      "rule": "LG-01",
+      "importance": 0.0
+    },
+    {
+      "rule": "LG-02",
+      "importance": 0.0
+    },
+    {
+      "rule": "LG-03",
+      "importance": 0.0
+    },
+    {
+      "rule": "MT-HOUSE",
+      "importance": 0.0
+    },
+    {
+      "rule": "MT-OWN",
+      "importance": 0.0
+    },
+    {
+      "rule": "MT-PAYEE",
+      "importance": 0.0
+    },
+    {
+      "rule": "NW-02",
+      "importance": 0.0
+    },
+    {
+      "rule": "TX-05",
+      "importance": 0.0
+    },
+    {
+      "rule": "TX-06",
+      "importance": 0.0
+    },
+    {
+      "rule": "TX-07",
+      "importance": 0.0
+    },
+    {
+      "rule": "TX-08",
+      "importance": 0.0
+    },
+    {
+      "rule": "TX-09",
+      "importance": 0.0
+    },
+    {
+      "rule": "MT-RECUR",
+      "importance": -0.0004
+    },
+    {
+      "rule": "NW-01",
+      "importance": -0.0008
+    },
+    {
+      "rule": "TX-04",
+      "importance": -0.0023
+    }
+  ]
+}
