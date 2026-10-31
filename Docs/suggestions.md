@@ -1,44 +1,37 @@
 # Suggestions for the Stage 01 Plan
 
-Date: 2026-10-31 · Reviews: `Docs/STAGE1_PLAN.md` against `Docs/ProblemStatement-Stage-1.pdf`
+Date: 2026-10-31 · Reviews: `Docs/STAGE1_PLAN.md` Revision 2 against the Digital Fraud Investigation System brief (challenge 1 in `Docs/All problem Statements.pdf`, same text as `Docs/ProblemStatement-Stage-1.pdf`)
 
-**Bottom line:** The direction is right. Keep the per-customer baselines, mitigating factors, immutable alerts and an app that works without the LLM. Fix the items below before coding, because several change the schema and the scoring contract. Do 1–3, 7, 9 and 12 first.
+**Bottom line:** All 19 suggestions from the first review are applied, so this file now lists only what is still open. Fix items 1–5 before coding. Items 1 and 5 change `schemas.py`, so lock those first.
 
-## Scoring and detection
+**Scope:** The team is working on challenge 1 only. The other six challenges in the pack are out of scope. The pack's fraud section covers Level 1 only, so section 1.4's view of later levels remains a guess.
 
-| # | Plan ref | Problem | Fix |
-| --- | --- | --- | --- |
-| 1 | 3.4 step 2, calibration cases | The ATO chain needs TX-01/02, but a regular high-value customer's transfer is within their norm, so neither fires. "Same transfer + failed logins + new device" does not reach High | Use a separate `high_value` flag in the chain, based on balance or absolute amount |
-| 2 | 3.4 step 2 | The ×1.5 multiplier is unreliable: 0.4 × 1.5 = 0.6 leaves a full ATO chain at Medium, and a base above 0.67 goes past 100 | Replace it with a score floor (e.g. minimum 80) when a chain is confirmed; mitigation cannot go below that floor |
-| 3 | 3.3 TX-01, TX-03 | In batch mode, using full history leaks the future: a fraud transaction inflates its own baseline, and "new beneficiary" is judged wrongly | Compare each event only with earlier, successful, outbound transactions |
-| 4 | 3.3 TX-01 | MAD = 0 for fixed payments such as rent or EMI, which causes division by zero | Put a minimum floor on the denominator; add a global fallback when no peer segment exists |
-| 5 | 3.3 MT-* | Tenure mitigation lowers the score of ATO victims, who are often long-tenure, clean-history customers | Turn off tenure and regular-payee mitigation while login signals are active |
-| 6 | 3.4 steps 1, 5 | Noisy-OR is not additive, so "+32, +18, −20" is undefined | Split the final score in proportion to `-ln(1 - wᵢsᵢ)` so contributions sum to it |
-
-## Alerts and cases
+## Fix before coding
 
 | # | Plan ref | Problem | Fix |
 | --- | --- | --- | --- |
-| 7 | 3.4 step 4, 3.5 | The brief wants every detected activity classified, but alerts start at 40, so Low never appears and the risk distribution is incomplete | Create Low alerts too; auto-create cases only for Medium and above. Define "hard rule" or remove it |
-| 8 | 3.4 calibration cases | "Low or Medium" is too loose for a lookalike, because Medium opens a case, which is itself a false positive | Expect Low |
-| 9 | 3.5, 3.7 `/api/detect/run` | Alerts are insert-only, so re-running detection duplicates them | Add `detection_run_id` and a stable dedupe key. Enforce immutability with a SQLite `BEFORE UPDATE` trigger |
-| 10 | 3.1, 3.5 | Shared-device and ATO alerts span several customers or events, but the model assumes one | Add an `alert_entities` link table and a nullable `product`. Filter dates on event time, not `created_at` |
-| 11 | 3.5 statuses | The flow is one-way, but the brief says classification can change later | Allow reversals such as False Positive → Requires Investigation, and log each change |
+| 1 | 3.5, 3.4 step 3 | The scoring unit is undefined. "Every event" gives five alerts for one failed-login burst and an alert for each login on a shared device. Login signals and transfers are separate events, so an ATO chain never lands in one score | Define the scoring units: transaction, login burst, device cluster and application. Attach login and device signals from the window to the transaction as context |
+| 2 | 3.4 step 5 | Contribution lines do not sum to the final score, because risk lines already total it before mitigation and floor lines are added. Final 20 with −30 damping gives −10; final 85 with a +45 floor gives 130. This came from the wording of the earlier suggestion #6 | Risk line = `undamped × cᵢ/Σc`; mitigation = `damped − undamped`; floor = `final − damped`. Clamp `wᵢsᵢ` below 1 to avoid `ln(0)` |
+| 3 | 3.3 point-in-time rule, TX-03, DV-03 | With point-in-time features, each customer's first device and first beneficiary count as "new", which floods a short dataset with false positives | Skip TX-03 and DV-03 when history is short (e.g. fewer than 5 prior events). Do not treat the onboarding device as new |
+| 4 | 3.4 step 3 | The partial ATO floor of 70 makes a legitimate user High: forgot password, failed attempts, reset, login from a new phone, with no money moved | Set the partial chain floor to Medium (e.g. 55). Require a beneficiary change or transfer for High. Add this case to the golden dataset, expecting Medium or lower |
+| 5 | 3.5 | A rule change makes a re-run write a new alert for every event, so the dashboard double-counts and duplicate cases open. The trigger also blocks only `UPDATE` | The dashboard reads the latest run only. A new alert for the same event attaches to the existing case. Add a `BEFORE DELETE` trigger and a separate demo reset path |
 
-## Ingestion and hidden tests
-
-| # | Plan ref | Problem | Fix |
-| --- | --- | --- | --- |
-| 12 | 3.1 `transaction` | The brief's transaction fields do not include `device_id`, `ip` or `customer_id` | Derive the customer from the sender account; link device and login data by customer + time window |
-| 13 | Section 4 P0 | Loan and claim files may not be provided: the brief's sample data lists only three sources | Make the pipeline run on any subset and show which indicators were skipped. Keep mandatory fields minimal, since anonymised data may omit name or DOB |
-| 14 | 3.2 step 2, 3.7 `/api/ingest` | The UI can correct a mapping, but no API accepts the correction | Add a mapping override parameter. Auto-apply fuzzy matches only at high confidence, so `sender_account` and `beneficiary_account` cannot get mixed up |
-| 15 | 3.2 steps 3, 5 | "Duplicate IDs are invalid" conflicts with "upsert on ID" | Reject duplicates within a file. Across files, skip identical rows and raise a conflict warning when data differs |
-| 16 | 3.1 | pandas turns `00123` into `123`, and some logs may have no `event_id` | Read files with `dtype=str`; generate a hash ID for logs without one |
-
-## Team and scope
+## Smaller fixes
 
 | # | Plan ref | Problem | Fix |
 | --- | --- | --- | --- |
-| 17 | Section 5 | Workstream A carries ingestion, the generator, cases and the dashboard API, and B's calibration waits on A's data | B makes a small hand-made golden dataset (5–6 customers) for calibration |
-| 18 | Section 4 | P0 is large for the time available | If behind at 12:45, cut rapidfuzz, the mapping UI, TX-05 and AP-02, in that order |
-| 19 | 3.3, 3.6, Section 4 | Some claims are stronger than the evidence, and the brief penalises unsupported AI claims | Do not say "150+ features" unless they are computed. Change "verified against N records" to "citations checked", because the guard only checks that IDs exist. Label precision/recall "on synthetic data" |
+| 6 | 3.4 step 3 | Chains only say "within 24 h", so a transfer before the login would also match | Enforce the order: failed logins → new device → transfer |
+| 7 | 3.3 HV-01 | A fixed absolute threshold breaks on unknown currencies and scales | Default to a value derived from loaded data, e.g. p90 of outbound amounts |
+| 8 | 3.3 DV-02 | Anonymised data may have no name or address, so the household check cannot run | Return a neutral result and show "assessment unavailable" |
+| 9 | 3.3 mitigation suspension | DV-03 alone suspends mitigation, which penalises a regular payer with a new phone | Suspend only when an LG signal is active |
+| 10 | Section 5, workstream A and integration rules | The dashboard endpoint moved to C, but A's modules still list it, and C's folders do not include `backend/app/api` | Remove it from A's list and give C an explicitly owned file for the endpoint |
+| 11 | Workstream A, section 6 | Generator v1 is due at 12:15 in one place and 12:00 in the other | Use one time |
+| 12 | Section 4 P0 | HV-01 is missing from the P0 indicator list, though the ATO chain depends on it | Add it |
+
+## Before starting
+
+| # | Item | Action |
+| --- | --- | --- |
+| 13 | Owners for workstreams A, B and C are blank | Fill in the names |
+| 14 | `requirements.txt` has only PDF-reading libraries | Replace it with the app stack from section 5 |
+| 15 | Deleting `GAME_PLAN.md` removed the 6:00 PM HackCulture submission deadline from the repo | Add one line about it to the plan |
