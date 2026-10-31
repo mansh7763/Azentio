@@ -5,7 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import alerts, cases, dashboard, records
 from app.config import settings
+from app.db import init_db
 from app.detect import router as detect
+
+init_db()
 
 app = FastAPI(title="FinShield", description="Digital Fraud Investigation System", version="0.1.0")
 

@@ -103,6 +103,7 @@ def test_rule_override_changes_version_and_scores(raw_golden):
 
 def test_detect_endpoint_returns_alerts():
     client = TestClient(app)
+    client.post("/api/demo/load")
     body = client.post("/api/detect/run").json()
     assert body["alerts"] and body["run"]["alerts_total"] == len(body["alerts"])
     Alert.model_validate(body["alerts"][0])
