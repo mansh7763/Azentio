@@ -24,6 +24,12 @@ Azentio.ai Hackathon · Digital Fraud Investigation System · Level 1 + Level 2
 
 > All numbers are measured on **synthetic, labelled data** that we never tuned on. They show how the rules behave against scenarios we can simulate, not real-world fraud rates. See [Evaluation](#evaluation) for what we miss.
 
+## Demo video (4:30)
+
+[![Watch the FinShield demo: ingestion, explainable detection, consolidated cases, network and AI agents](Docs/FinShield_Demo_Video_thumb.png)](https://github.com/mansh7763/Azentio/raw/main/Docs/FinShield_Demo_Video.mp4)
+
+Click the image to play `Docs/FinShield_Demo_Video.mp4`: a live walkthrough on a fresh database with AI voice-over and captions, covering upload and validation, detection, explainable scores, prioritised and consolidated cases, analyst actions, Ask FinShield, split, the relationship network and Pattern Scout.
+
 ## See it
 
 <table>
@@ -95,12 +101,6 @@ Green is the deterministic decision path, the only place a score, band or case i
 | Propose a new rule | No | No | Pattern Scout suggests | Approve / dismiss recorded; rules unchanged |
 
 A test (`backend/tests/test_ml_shadow.py`) runs the golden set with and without the ML model and asserts that rule scores, bands and categories are identical.
-
-## Demo video (4:30)
-
-[![Watch the FinShield demo: ingestion, explainable detection, consolidated cases, network and AI agents](Docs/FinShield_Demo_Video_thumb.png)](https://github.com/mansh7763/Azentio/raw/main/Docs/FinShield_Demo_Video.mp4)
-
-Click the image to play `Docs/FinShield_Demo_Video.mp4`: a live walkthrough on a fresh database with AI voice-over and captions, covering upload and validation, detection, explainable scores, prioritised and consolidated cases, analyst actions, Ask FinShield, split, the relationship network and Pattern Scout.
 
 ## What it does
 
