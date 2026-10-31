@@ -1,5 +1,5 @@
 # PLACEHOLDER - owner A replaces
-"""Ingestion, demo data, records, customer 360 and admin reset."""
+"""Ingestion, demo data, records and customer 360."""
 
 from fastapi import APIRouter, File, Form, UploadFile
 
@@ -29,7 +29,4 @@ def customer_360(customer_id: str):
     return {"customer": {"customer_id": customer_id}, "accounts": [], "transactions": [], "logins": [],
             "applications": [], "claims": [], "alerts": [a for a in sample_data.ALERTS if a.customer_id == customer_id]}
 
-
-@router.post("/admin/reset")
-def reset(reload_demo: bool = True):
-    return {"reset": True, "reloaded_demo": reload_demo}
+# No public reset endpoint (revision 4): rehearse on a separate disposable local database.

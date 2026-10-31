@@ -113,7 +113,8 @@ def run_detection(dataset: Dataset, config: RulesConfig | None = None, run_id: s
     rid = run_id or "RUN-" + _sha(cfg.version + _fingerprint(ds))[:10]
 
     alerts: list[Alert] = []
-    for unit in build_units(ds, signals, bursts, cfg):
+    units = build_units(ds, signals, bursts, cfg)
+    for unit in units:
         everything = unit.signals + unit.context
         risk = [s for s in everything if s.direction == Direction.risk and effect(s) > 0]
         if not risk:
@@ -130,7 +131,9 @@ def run_detection(dataset: Dataset, config: RulesConfig | None = None, run_id: s
             category = next((s.category for s in risk if s.indicator_id == top.indicator_id and s.category),
                             DEFAULT_CATEGORY[unit.unit_type])
 
-        key = _sha(f"{unit.unit_type.value}|{unit.primary_entity_id}|{','.join(sorted(unit.event_ids))}")
+        # A device cluster keeps one key as its logins grow, so re-runs attach to the same case (revision 4).
+        members = "" if unit.unit_type == UnitType.device_cluster else ",".join(sorted(unit.event_ids))
+        key = _sha(f"{unit.unit_type.value}|{unit.primary_entity_id}|{members}")
         evidence_ids = set(unit.event_ids) | {e for c in lines for e in c.evidence_ids}
         if unit.customer_id:
             evidence_ids.add(unit.customer_id)
@@ -150,10 +153,18 @@ def run_detection(dataset: Dataset, config: RulesConfig | None = None, run_id: s
         ))
 
     alerts.sort(key=lambda a: (a.event_time, a.alert_id))
+    txns = ds.get("transactions")
+    coverage = {
+        "evaluated_units": len(txns) + len(bursts) + len(ds.get("applications"))
+                           + sum(1 for u in units if u.unit_type == UnitType.device_cluster),
+        "insufficient_history": int((profiles["baseline_source"] != "customer").sum()) if not profiles.empty else 0,
+        "unresolved_link": int(txns["customer_id"].isna().sum()) if not txns.empty else 0,
+        "derived_device_link": int((txns["device_link"] == "derived").sum()) if "device_link" in txns else 0,
+    }
     run = DetectionRun(
         run_id=rid, rules_version=cfg.version,
         records_processed={name: len(df) for name, df in sorted(ds.frames.items())},
         alerts_total=len(alerts), counts_by_band=dict(Counter(a.band.value for a in alerts)),
-        indicators_run=run_ids, indicators_skipped=skipped,
+        indicators_run=run_ids, indicators_skipped=skipped, coverage=coverage,
     )
     return DetectionResult(run=run, alerts=alerts)

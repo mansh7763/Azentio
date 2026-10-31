@@ -34,6 +34,8 @@ def test_golden_case(golden_result, case):
         assert not found, detail
     if "band" in case:
         assert any(a.band == Band(case["band"]) for a in found), detail
+    if "min_band" in case:
+        assert found and all(ORDER[a.band] >= ORDER[Band(case["min_band"])] for a in found), detail
     if "max_band" in case:
         assert all(ORDER[a.band] <= ORDER[Band(case["max_band"])] for a in found), detail
     if "category" in case:
@@ -79,7 +81,7 @@ def test_run_summary(golden_result):
     assert run.alerts_total == len(golden_result.alerts)
     assert sum(run.counts_by_band.values()) == run.alerts_total
     assert run.records_processed["transactions"] > 0
-    assert not run.indicators_skipped
+    assert set(run.indicators_skipped.values()) == {"disabled in rules"}  # only TX-02 (revision 4)
 
 
 def test_only_customers_and_transactions(raw_golden):
@@ -106,3 +108,21 @@ def test_detect_endpoint_returns_alerts():
     Alert.model_validate(body["alerts"][0])
     rules = client.get("/api/rules").json()
     assert rules["indicators"]["TX-01"]["weight"] == 0.45
+
+
+def test_device_cluster_key_stable_when_logins_added(raw_golden):
+    import pandas as pd
+    before = {a.primary_entity_id: a.dedupe_key for a in run_detection(raw_golden).alerts}
+    extra = pd.DataFrame([{"event_id": "L-EXTRA-RING", "customer_id": "C010", "timestamp": "2026-10-20T10:00:00Z",
+                           "device_id": "DEV-RING", "outcome": "success", "event_type": "login"}])
+    grown = Dataset({**raw_golden.frames, "logins": pd.concat([raw_golden.frames["logins"], extra], ignore_index=True)})
+    after = {a.primary_entity_id: a.dedupe_key for a in run_detection(grown).alerts}
+    assert after["DEV-RING"] == before["DEV-RING"]
+
+
+def test_coverage_reported_separately_from_risk(golden_result):
+    cov = golden_result.run.coverage
+    assert cov["evaluated_units"] >= golden_result.run.alerts_total
+    for key in ("insufficient_history", "unresolved_link", "derived_device_link"):
+        assert key in cov
+    assert cov["insufficient_history"] > 0

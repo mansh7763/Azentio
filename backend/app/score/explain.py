@@ -3,7 +3,7 @@
 import math
 
 from app.schemas import Contribution, Signal
-from app.score.scoring import ChainMatch, ScoreBreakdown, applied_mitigations, effect
+from app.score.scoring import ChainMatch, ScoreBreakdown, applied_mitigations, counted, effect, family_of
 
 
 def _log_share(signal: Signal) -> float:
@@ -15,10 +15,14 @@ def contributions(risk: list[Signal], mitigating: list[Signal], chain: ChainMatc
     lines: list[tuple[float, Contribution]] = []
 
     active = [s for s in risk if effect(s) > 0]
-    total = sum(_log_share(s) for s in active)
+    scored = counted(active)
+    total = sum(_log_share(s) for s in scored)
     for s in active:
-        raw = breakdown.undamped * _log_share(s) / total
-        lines.append((raw, Contribution(indicator_id=s.indicator_id, kind="risk", points=0, reason=s.reason,
+        if s in scored:
+            raw, reason = breakdown.undamped * _log_share(s) / total, s.reason
+        else:  # same fact as a stronger rule: shown, but not counted twice
+            raw, reason = 0.0, f"{s.reason} (already counted under '{family_of(s.indicator_id)}')"
+        lines.append((raw, Contribution(indicator_id=s.indicator_id, kind="risk", points=0, reason=reason,
                                         evidence_ids=s.evidence_ids or s.event_ids)))
 
     mits = applied_mitigations(mitigating, breakdown.mitigation_suspended)

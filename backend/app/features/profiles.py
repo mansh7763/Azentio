@@ -51,20 +51,23 @@ def transaction_profiles(ds: Dataset, cfg: RulesConfig) -> pd.DataFrame:
     usable = baseline_rows(txns)
     tolerance = cfg.params("MT-PAYEE").get("tolerance", 0.25)
 
-    by_customer: dict[str, list[float]] = defaultdict(list)
-    by_segment: dict[str, list[float]] = defaultdict(list)
-    global_amounts: list[float] = []
+    # Baselines are per currency: INR history says nothing about a USD payment, and no FX is guessed.
+    by_customer: dict[tuple, list[float]] = defaultdict(list)
+    by_segment: dict[tuple, list[float]] = defaultdict(list)
+    by_currency: dict[str, list[float]] = defaultdict(list)
     payees: dict[str, dict[str, list[tuple[float, object]]]] = defaultdict(lambda: defaultdict(list))
 
     rows = []
     for idx, t in txns.sort_values("seq").iterrows():
         cid, amount, payee = t["customer_id"], float(t["amount"]), t["beneficiary_account"]
+        currency = str(t.get("currency") or "").upper()
         segment = segment_of.get(cid)
-        own = by_customer[cid]
+        own = by_customer[(cid, currency)]
+        global_amounts = by_currency[currency]
         if len(own) >= cfg.min_history:
             source, base = "customer", own
-        elif segment and len(by_segment[segment]) >= cfg.min_history:
-            source, base = "segment", by_segment[segment]
+        elif segment and len(by_segment[(segment, currency)]) >= cfg.min_history:
+            source, base = "segment", by_segment[(segment, currency)]
         elif global_amounts:
             source, base = "global", global_amounts
         else:
@@ -93,7 +96,7 @@ def transaction_profiles(ds: Dataset, cfg: RulesConfig) -> pd.DataFrame:
         if usable[idx]:
             own.append(amount)
             if segment:
-                by_segment[segment].append(amount)
+                by_segment[(segment, currency)].append(amount)
             global_amounts.append(amount)
             history[payee].append((amount, t["timestamp"]))
 

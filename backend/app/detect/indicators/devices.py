@@ -55,7 +55,7 @@ def device_signals(ds: Dataset, cfg: RulesConfig) -> list[Signal]:
             if cfg.enabled("MT-HOUSE"):
                 out.append(Signal(indicator_id="MT-HOUSE", entity_id=device, event_ids=event_ids, event_time=when,
                                   weight=cfg.weight("MT-HOUSE"), direction=Direction.mitigating,
-                                  reason=f"Household sharing: all {len(members)} customers share the surname and address",
+                                  reason=f"Possible household: all {len(members)} customers share the surname and address (not verified kinship)",
                                   evidence_ids=members))
             continue
 

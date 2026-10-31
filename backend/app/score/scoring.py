@@ -8,6 +8,26 @@ from app.schemas import Band, Category, Signal
 MAX_SIGNAL = 0.99  # keeps -ln(1 - w*s) finite
 SUSPENDABLE = {"MT-PAYEE", "MT-RECUR", "MT-TENURE"}  # switched off while a login signal is active
 SUPPORTING = {"MT-KNOWN", "MT-TENURE"}  # only damp when a strong lookalike factor is also present
+# Rules that measure the same fact share a family; only the strongest in a family counts (revision 4).
+FAMILY = {
+    "TX-01": "amount", "TX-02": "amount", "HV-01": "amount",
+    "TX-03": "new_payee", "TX-05": "new_payee",
+    "LG-01": "failed_login", "LG-02": "failed_login", "LG-03": "failed_login",
+}
+
+
+def family_of(indicator_id: str) -> str:
+    return FAMILY.get(indicator_id, indicator_id)
+
+
+def counted(risk: list[Signal]) -> list[Signal]:
+    """The strongest signal of each family (ties broken by indicator id, so results are deterministic)."""
+    best: dict[str, Signal] = {}
+    for s in sorted(risk, key=lambda x: x.indicator_id):
+        f = family_of(s.indicator_id)
+        if f not in best or effect(s) > effect(best[f]):
+            best[f] = s
+    return [s for s in risk if best.get(family_of(s.indicator_id)) is s]
 
 
 @dataclass
@@ -34,8 +54,10 @@ def effect(signal: Signal) -> float:
 
 
 def should_suspend(signals: list[Signal]) -> bool:
-    """Payee/recurrence/tenure mitigation is off while a login signal is active; a new device alone does not count."""
-    return any(s.indicator_id.startswith("LG-") for s in signals)
+    """Payee/recurrence/tenure mitigation is off only for corroborated access: a successful login after failures
+    (LG-02) on a new device (DV-03). Failures alone, or a new device alone, do not count (revision 4)."""
+    ids = {s.indicator_id for s in signals}
+    return "LG-02" in ids and "DV-03" in ids
 
 
 def applied_mitigations(mitigating: list[Signal], suspend_mitigation: bool) -> list[Signal]:
@@ -58,7 +80,7 @@ def band_for(value: int, cfg: RulesConfig) -> Band:
 def score(risk: list[Signal], mitigating: list[Signal], chain: ChainMatch | None,
           suspend_mitigation: bool, cfg: RulesConfig, cap: int | None = None) -> ScoreBreakdown:
     keep = 1.0
-    for s in risk:
+    for s in counted(risk):
         keep *= 1 - effect(s)
     undamped = 100 * (1 - keep)
 

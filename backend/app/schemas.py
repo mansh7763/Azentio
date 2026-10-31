@@ -182,6 +182,8 @@ class DetectionRun(BaseModel):
     counts_by_band: dict[str, int] = Field(default_factory=dict)
     indicators_run: list[str] = Field(default_factory=list)
     indicators_skipped: dict[str, str] = Field(default_factory=dict)
+    # Kept separate from risk (revision 4): evaluated_units, insufficient_history, unresolved_link, derived_device_link
+    coverage: dict[str, int] = Field(default_factory=dict)
 
 
 class DetectionResponse(BaseModel):

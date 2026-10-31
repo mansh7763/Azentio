@@ -102,14 +102,15 @@ login("L-C004-OK", "C004", D + timedelta(days=2, hours=10, minutes=36), "DEV-Y")
 expected.append({"id": "LG-T7", "unit_type": "transaction", "entity": "T-C004-BIG", "max_band": "Medium",
                  "no_chain": True})
 
-# TX-T1 / TX-T5 / TX-T6 — small spender, then a large transfer to a new payee -> High
+# TX-T1 / TX-T5 / TX-T6 — small spender, then a large transfer to a new payee -> at least Medium (actionable).
+# Revision 4: amount + new payee without access/identity corroboration need not be High.
 customer("C005", "Kabir Shah", "3 Ring Road", "Delhi")
 history_logins("C005", "DEV-C005")
 small_history("C005", ["BEN-5A", "BEN-5B", "BEN-5C"], [2000, 3500, 5000, 2500, 4000, 3000, 4500, 2200])
 login("L-C005-NOW", "C005", D + timedelta(days=3, hours=11, minutes=50), "DEV-C005")
 txn("T-C005-BIG", "C005", D + timedelta(days=3, hours=12), 150000, "BEN-NEW")
 txn("T-C005-LATER", "C005", D + timedelta(days=4, hours=12), 4000, "BEN-NEW")
-expected.append({"id": "TX-T1", "unit_type": "transaction", "entity": "T-C005-BIG", "band": "High",
+expected.append({"id": "TX-T1", "unit_type": "transaction", "entity": "T-C005-BIG", "min_band": "Medium",
                  "category": "suspicious_transfer"})
 
 # TX-T2 — six transfers in 20 minutes to five new payees -> the last one High
@@ -149,10 +150,37 @@ for n, (cid, name, address, city) in enumerate(ring):
                  "device_id": "DEV-RING", "ip": "10.9.9.9", "phone": "9000000001",
                  "email": f"{cid.lower()}@example.com", "status": "submitted",
                  "disbursement_account": f"A-{cid}"})
+# Application order by time: C010, C013, C011, C012. Revision 4: an application is judged at its own time, so the
+# first two cannot become High from applications that arrive later; the 3rd and 4th see the ring.
+for cid in ("C011", "C012"):
     expected.append({"id": f"AP-T1-{cid}", "unit_type": "application", "entity": f"APP-{cid}", "band": "High",
                      "category": "loan_application_fraud"})
+for cid in ("C010", "C013"):
+    expected.append({"id": f"AP-T1-early-{cid}", "unit_type": "application", "entity": f"APP-{cid}",
+                     "max_band": "Medium"})
 expected.append({"id": "DV-T1", "unit_type": "device_cluster", "entity": "DEV-RING", "band": "High",
                  "category": "shared_device", "one_alert_for": True})
+
+# G7 — three colleagues apply from the same office IP, each on their own device with their own phone -> not High
+for n, (cid, name) in enumerate([("C016", "Amit Verma"), ("C017", "Pooja Rao"), ("C018", "Karan Bose")]):
+    customer(cid, name, f"{n + 1} Tech Park", "Bengaluru")
+    history_logins(cid, f"DEV-{cid}")
+    apps.append({"application_id": f"APP-{cid}", "customer_id": cid, "product": "personal_loan", "amount": "200000",
+                 "timestamp": iso(D + timedelta(days=10, hours=10 + n)), "device_id": f"DEV-{cid}",
+                 "ip": "10.50.0.1", "phone": f"98{cid[1:]:0>8}", "email": f"{cid.lower()}@example.com",
+                 "status": "submitted", "disbursement_account": f"A-{cid}"})
+    expected.append({"id": f"G7-{cid}", "unit_type": "application", "entity": f"APP-{cid}", "max_band": "Low"})
+
+# G3 — failed logins, then a successful login on the USUAL device, then an ordinary payment -> no takeover chain
+customer("C019", "Deepa Nair", "14 Garden Rd", "Kochi")
+history_logins("C019", "DEV-C019")
+small_history("C019", ["BEN-19A"], [3000, 3100, 2900, 3000, 3050, 3000])
+for i in range(6):
+    login(f"L-C019-F{i}", "C019", D + timedelta(days=11, hours=9, minutes=i), "DEV-C019", outcome="fail")
+login("L-C019-OK", "C019", D + timedelta(days=11, hours=9, minutes=7), "DEV-C019")
+txn("T-C019-RENT", "C019", D + timedelta(days=11, hours=9, minutes=15), 3000, "BEN-19A")
+expected.append({"id": "G3-usual-device", "unit_type": "transaction", "entity": "T-C019-RENT", "max_band": "Low",
+                 "no_chain": True})
 
 # LG-T2 / LG-T8 — six failures, no success -> exactly one burst alert, at most Medium
 customer("C014", "Gita Menon", "6 Temple St", "Madurai")

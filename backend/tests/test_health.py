@@ -21,7 +21,6 @@ def test_health():
     ("get", "/api/rules"),
     ("post", "/api/detect/run"),
     ("post", "/api/demo/load"),
-    ("post", "/api/admin/reset"),
 ])
 def test_contract_routes_exist(method, path):
     assert getattr(client, method)(path).status_code == 200
@@ -35,3 +34,7 @@ def test_case_decision_placeholder():
 def test_ingest_placeholder_accepts_file():
     r = client.post("/api/ingest", files={"file": ("t.csv", b"txn_id,amount\nT1,10\n", "text/csv")})
     assert r.status_code == 200 and r.json()["file_name"] == "t.csv"
+
+
+def test_no_public_reset_endpoint():
+    assert client.post("/api/admin/reset").status_code in (404, 405)

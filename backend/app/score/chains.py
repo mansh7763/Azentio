@@ -32,10 +32,12 @@ def match_chain(unit: ScoringUnit, bursts: list[Burst], cfg: RulesConfig) -> Cha
                               f"{b.success_device} → high-value transfer {gap} min later")
         payee_added = [eid for kind, eid, when in b.after_actions
                        if kind == "beneficiary_add" and b.success_time <= when <= unit.event_time]
-        if payee_added or b.new_device or ids & {"TX-03", "HV-01"}:
+        # Revision 4: High needs corroborating access context (success on a new device) plus a payee change.
+        # An ordinary payment after failed logins from the usual device is not a takeover chain.
+        if b.new_device and (payee_added or "TX-03" in ids):
             return ChainMatch("ato_movement", floors.ato_movement, evidence + payee_added,
-                              f"Account-takeover pattern: {len(b.failure_ids)} failed logins → successful login → "
-                              f"risky transfer {gap} min later")
+                              f"Account-takeover pattern: {len(b.failure_ids)} failed logins → login from new device "
+                              f"{b.success_device} → payment to a new beneficiary {gap} min later")
         return None
 
     if unit.unit_type == UnitType.login_burst:
@@ -44,7 +46,7 @@ def match_chain(unit: ScoringUnit, bursts: list[Burst], cfg: RulesConfig) -> Cha
             return None
         kinds = {kind for kind, _, _ in b.after_actions}
         evidence = b.failure_ids + [b.success_id] + [eid for _, eid, _ in b.after_actions]
-        if "beneficiary_add" in kinds:
+        if "beneficiary_add" in kinds and b.new_device:
             return ChainMatch("ato_movement", floors.ato_movement, evidence,
                               "Account-takeover pattern: failed logins → successful login → beneficiary added")
         if b.new_device or "password_reset" in kinds:

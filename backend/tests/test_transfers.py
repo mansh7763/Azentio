@@ -86,7 +86,8 @@ def test_regular_payer_no_tx01_tx02_tx03(signals):
 
 
 def test_large_transfer_to_new_payee(signals):
-    assert {"TX-01", "TX-02", "TX-03"} <= signals["T-C005-BIG"]
+    assert {"TX-01", "TX-03"} <= signals["T-C005-BIG"]
+    assert "TX-02" not in signals["T-C005-BIG"]  # revision 4: TX-02 duplicates TX-01, off in P0
 
 
 def test_fanout_emits_tx04_tx05(signals):
@@ -102,11 +103,29 @@ def test_short_history_skips_tx03(cfg):
     assert not [s for s in transfer_signals(ds, cfg, prof) if s.indicator_id == "TX-03"]
 
 
-def test_hv_threshold_is_p90_unless_configured(golden, cfg):
-    amounts = golden.get("transactions")["amount"]
-    assert hv_threshold(golden, cfg) == pytest.approx(amounts.quantile(0.9))
+def test_hv_threshold_uses_prior_same_currency_only(golden, cfg):
+    txns = golden.get("transactions")
+    thresholds = hv_threshold(golden, cfg)
+    ato = txns.set_index("txn_id").loc["T-C002-ATO"]
+    prior = txns[(txns["seq"] < ato["seq"]) & (txns["currency"] == ato["currency"])]["amount"]
+    assert thresholds["T-C002-ATO"] == pytest.approx(prior.quantile(0.9))
+    assert thresholds[txns.iloc[0]["txn_id"]] is None  # too little history -> no threshold, HV-01 skipped
+
+
+def test_hv_threshold_configured_value(golden):
     fixed = load_rules({"indicators": {"HV-01": {"params": {"threshold": 5000}}}})
-    assert hv_threshold(golden, fixed) == 5000
+    assert set(hv_threshold(golden, fixed).values()) == {5000}
+
+
+def test_baselines_are_per_currency(cfg):
+    rows = [(f"I{i}", "C", f"2026-09-0{i + 1}T10:00:00Z", 100000, "B") for i in range(6)]
+    frames = _frames(rows)
+    usd = pd.DataFrame([{"txn_id": "U1", "sender_account": "A-C", "timestamp": "2026-09-09T10:00:00Z",
+                         "amount": "1200", "beneficiary_account": "B", "currency": "USD"}])
+    frames["transactions"]["currency"] = "INR"
+    frames["transactions"] = pd.concat([frames["transactions"], usd], ignore_index=True)
+    prof = transaction_profiles(prepare(Dataset.from_frames(**frames), cfg), cfg)
+    assert prof.loc["U1", "baseline_source"] == "none"  # INR history says nothing about a USD payment
 
 
 def test_reason_names_concrete_values(golden, cfg, profiles):

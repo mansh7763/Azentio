@@ -51,7 +51,7 @@ def test_ring_device_high_one_alert(world, cfg):
     assert unit_score(ring[0], bursts, cfg).score >= 70
 
 
-@pytest.mark.parametrize("cid", ["C010", "C011", "C012", "C013"])
+@pytest.mark.parametrize("cid", ["C011", "C012"])  # 3rd and 4th by time; earlier ones are judged without later apps
 def test_ring_applications_high(world, cfg, cid):
     bursts, units, _ = world
     unit = units_of(units, UnitType.application, f"APP-{cid}")[0]
@@ -99,3 +99,31 @@ def test_emi_payer_gets_recurring_mitigation(world):
     unit = units_of(units, UnitType.transaction, "T-C007-EMI")
     ids = {s.indicator_id for s in unit[0].signals} if unit else set()
     assert "MT-RECUR" in ids
+
+
+def test_identity_conflict_on_ring_application(world):
+    _, units, _ = world
+    unit = units_of(units, UnitType.application, "APP-C011")[0]
+    id01 = [s for s in unit.signals if s.indicator_id == "ID-01"]
+    assert id01 and "9000000001" in id01[0].reason
+
+
+def test_own_phone_on_application_is_not_a_conflict(world):
+    _, _, signals = world
+    assert not [s for s in signals if s.indicator_id == "ID-01" and s.entity_id == "APP-C016"]
+
+
+def test_office_ip_alone_is_not_ap01(world):
+    _, _, signals = world
+    assert not [s for s in signals if s.indicator_id == "AP-01" and s.entity_id in ("APP-C016", "APP-C017", "APP-C018")]
+
+
+def test_early_ring_application_not_judged_on_later_ones(world):
+    _, _, signals = world
+    assert not [s for s in signals if s.indicator_id == "AP-01" and s.entity_id in ("APP-C010", "APP-C013")]
+
+
+def test_household_is_only_possible(world):
+    _, units, _ = world
+    unit = units_of(units, UnitType.device_cluster, "DEV-HOME")[0]
+    assert "Possible household" in [s for s in unit.signals if s.indicator_id == "MT-HOUSE"][0].reason

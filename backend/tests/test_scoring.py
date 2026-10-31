@@ -6,7 +6,7 @@ import pytest
 
 from app.schemas import Band, Direction, Signal
 from app.score.explain import contributions
-from app.score.scoring import ChainMatch, band_for, score
+from app.score.scoring import ChainMatch, band_for, score, should_suspend
 
 T = datetime(2026, 10, 1, tzinfo=timezone.utc)
 
@@ -102,7 +102,7 @@ def test_lines_carry_evidence(cfg):
 
 
 def test_cap_keeps_score_below_high_and_lines_sum(cfg):
-    risks = [risk("LG-01", 0.3), risk("LG-02", 0.35), risk("LG-03", 0.35), risk("DV-03", 0.25)]
+    risks = [risk("A", 0.45), risk("B", 0.45), risk("C", 0.35)]  # independent families, raw ~80
     b = score(risks, [], None, False, cfg, cap=69)
     lines = contributions(risks, [], None, b)
     assert b.score == 69 and b.band == Band.medium
@@ -116,3 +116,22 @@ def test_weak_mitigations_alone_do_not_damp(cfg):
     assert alone.final == pytest.approx(alone.undamped)
     supported = score(r, [mit("MT-PAYEE", 0.6), mit("MT-KNOWN", 0.2)], None, False, cfg)
     assert supported.final == pytest.approx(supported.undamped * 0.4 * 0.8)
+
+
+def test_correlated_rules_count_once(cfg):
+    """Revision 4: rules in the same family (TX-01/TX-02 both measure amount) use the strongest, not the sum."""
+    one = score([risk("TX-01", 0.45)], [], None, False, cfg)
+    both = score([risk("TX-01", 0.45), risk("TX-02", 0.30)], [], None, False, cfg)
+    assert both.final == pytest.approx(one.final)
+    lines = contributions([risk("TX-01", 0.45), risk("TX-02", 0.30)], [], None, both)
+    assert sum(c.points for c in lines) == both.score
+
+
+def test_failures_alone_do_not_suspend_mitigation():
+    t = datetime(2026, 10, 1, tzinfo=timezone.utc)
+    lg1 = Signal(indicator_id="LG-01", entity_id="E", event_time=t, weight=0.3, reason="fails")
+    lg2 = Signal(indicator_id="LG-02", entity_id="E", event_time=t, weight=0.35, reason="success")
+    dv3 = Signal(indicator_id="DV-03", entity_id="E", event_time=t, weight=0.25, reason="new device")
+    assert not should_suspend([lg1])
+    assert not should_suspend([lg1, lg2])          # forgot password on the usual device
+    assert should_suspend([lg1, lg2, dv3])         # corroborated: success on a new device

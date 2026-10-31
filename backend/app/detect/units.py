@@ -66,7 +66,7 @@ def build_units(ds: Dataset, signals: list[Signal], bursts: list[Burst], cfg: Ru
             continue  # the burst is context on that transfer instead
         own = [s for s in login_by_customer.get(b.customer_id, [])
                if s.entity_id == b.burst_id or (s.indicator_id == "DV-03" and s.entity_id == b.success_id)]
-        moved_payee = any(kind == "beneficiary_add" for kind, _, _ in b.after_actions)
+        moved_payee = b.new_device is True and any(kind == "beneficiary_add" for kind, _, _ in b.after_actions)
         units.append(ScoringUnit(UnitType.login_burst, b.burst_id, b.customer_id,
                                  b.failure_ids + ([b.success_id] if b.success_id else []),
                                  b.success_time or b.end, None, own, [],
@@ -86,12 +86,11 @@ def build_units(ds: Dataset, signals: list[Signal], bursts: list[Burst], cfg: Ru
     apps = ds.get("applications")
     if not apps.empty:
         for _, a in apps.sort_values("seq").iterrows():
-            own = [s for s in by_entity.get(a["application_id"], []) if s.indicator_id.startswith("AP-")]
-            device = a.get("device_id")
-            context = [s for s in device_groups.get(device, []) if s.indicator_id in ("DV-01", "DV-02")
-                       and s.direction.value == "risk"] if isinstance(device, str) else []
-            if own or context:
+            # Applications have their own detector (AP-*, ID-01), judged at the application's own time.
+            # Whole-batch device signals are not borrowed: they would let later logins raise an earlier application.
+            own = [s for s in by_entity.get(a["application_id"], []) if s.indicator_id.startswith(("AP-", "ID-"))]
+            if own:
                 units.append(ScoringUnit(UnitType.application, a["application_id"], a["customer_id"],
                                          [a["application_id"]], a["timestamp"].to_pydatetime(),
-                                         a.get("product"), own, context))
+                                         a.get("product"), own, []))
     return units
