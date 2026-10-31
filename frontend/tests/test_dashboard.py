@@ -101,3 +101,9 @@ def test_reads_share_the_stored_run_and_never_create_runs():
     after = client.get('/api/cases').json()['items']
     assert {c['case_id'] for c in cases} <= {c['case_id'] for c in after}
     assert len({c['case_id'] for c in after}) == len(after)
+
+
+def test_blank_text_filters_mean_no_filter(result):
+    everything = [a['alert_id'] for a in project(result)['alerts']]
+    assert [a['alert_id'] for a in project(result, customer_id='  ', txn_id=' ', product='')['alerts']] == everything
+    assert [a['alert_id'] for a in project(result, customer_id=' c002 ')['alerts']] == ['ALT-1']

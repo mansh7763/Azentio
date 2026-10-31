@@ -54,9 +54,10 @@ def project(result, customer_id=None, band=None, category=None, detection_type=N
             product=None, txn_id=None, date_from=None, date_to=None):
     if date_from and date_to and date_from > date_to:
         raise HTTPException(422, "Start date must precede end date")
-    # A's filter, so the dashboard and GET /alerts always select the same alerts.
-    items = filter_alerts(result.alerts, customer_id or None, band or None, category or None, detection_type or None,
-                          product or None, txn_id or None, date_from, date_to)
+    # A's filter, so the dashboard and GET /alerts always select the same alerts. Blank text means "no filter".
+    blank = lambda v: (v or "").strip() or None  # noqa: E731
+    items = filter_alerts(result.alerts, blank(customer_id), blank(band), blank(category), blank(detection_type),
+                          blank(product), blank(txn_id), date_from, date_to)
     bands = Counter(a.band.value for a in items)
     days = defaultdict(Counter)
     for a in items: days[a.event_time.date().isoformat()][a.band.value] += 1
