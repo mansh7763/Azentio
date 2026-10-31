@@ -56,7 +56,7 @@ def transfer_signals(ds: Dataset, cfg: RulesConfig, profiles: pd.DataFrame) -> l
     # No balance-share check: the accounts file holds a snapshot balance of unknown timing, and a share of it
     # would need the balance immediately before the payment (revision 4).
 
-    window = pd.Timedelta(minutes=p4.get("minutes", 60))
+    window = pd.Timedelta(minutes=p4["minutes"])
     fan_window = pd.Timedelta(hours=p5.get("hours", 24))
     kinds = txns["type"] if "type" in txns else pd.Series([None] * len(txns), index=txns.index)
     outbound = txns[[not is_inbound(k) for k in kinds]]
