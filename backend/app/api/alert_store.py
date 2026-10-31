@@ -1,16 +1,19 @@
 """Persist detection runs. Alerts are immutable snapshots; a case follows one incident across runs."""
 
 import hashlib
-from datetime import date, datetime, timezone
+from collections import defaultdict
+from datetime import date, datetime, timedelta, timezone
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.detect.engine import DetectionResult
-from app.models import AlertRow, CaseEventRow, CaseRow, DetectionRunRow
+from app.graph.priority import prioritise
+from app.models import AlertRow, CaseEventRow, CaseIncidentRow, CaseRow, DetectionRunRow
 from app.schemas import Alert, Band, CaseStatus, DetectionRun
 
 ACTIONABLE = {Band.medium, Band.high}
+SAME_CUSTOMER_WINDOW = timedelta(hours=72)
 
 
 def now() -> datetime:
@@ -37,28 +40,107 @@ def _account(alert: Alert) -> str | None:
     return rows[0].get("sender_account") if rows else None
 
 
-def _sync_case(session: Session, alert: Alert, key: str) -> None:
-    case = session.scalar(select(CaseRow).where(CaseRow.incident_key == key))
+def consolidate(alerts: list[Alert], groups: list[dict]) -> list[dict]:
+    """One investigation per linked group, or per customer's alerts within 72 hours. Returns alerts with the reason."""
+    parent = {a.alert_id: a.alert_id for a in alerts}
+    reasons: dict[str, list[str]] = defaultdict(list)
+
+    def find(x: str) -> str:
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def join(ids: list[str], reason: str) -> None:
+        for other in ids[1:]:
+            parent[find(other)] = find(ids[0])
+        if len(ids) > 1:
+            reasons[ids[0]].append(reason)
+
+    by_customer: dict[str, list[Alert]] = defaultdict(list)
+    for alert in alerts:
+        if alert.customer_id:
+            by_customer[alert.customer_id].append(alert)
+    for customer, own in by_customer.items():
+        own.sort(key=lambda a: a.event_time)
+        for earlier, later in zip(own, own[1:]):
+            if later.event_time - earlier.event_time <= SAME_CUSTOMER_WINDOW:
+                join([earlier.alert_id, later.alert_id], f"same customer {customer} within 72 hours")
+    for group in groups:
+        join([i for i in group["alert_ids"] if i in parent], f"linked group: {group['reason']}")
+
+    merged: dict[str, list[Alert]] = defaultdict(list)
+    for alert in alerts:
+        merged[find(alert.alert_id)].append(alert)
+    roots: dict[str, list[str]] = defaultdict(list)
+    for first, texts in reasons.items():
+        roots[find(first)] += texts
+    return [{"alerts": members, "reason": "; ".join(dict.fromkeys(roots[root])) or "Single alert: no related activity found"}
+            for root, members in merged.items()]
+
+
+def _open_case(session: Session, case_id: str, reason: str, note: str) -> CaseRow:
     stamp = now()
-    if case is not None:
-        if alert.alert_id not in case.alert_ids:
-            case.alert_ids = [*case.alert_ids, alert.alert_id]
-        case.score, case.band, case.updated_at = alert.score, alert.band.value, stamp
-        return
-    if alert.band not in ACTIONABLE:
-        return
-    case_id = f"CASE-{key[:10]}"
-    session.add(CaseRow(
-        case_id=case_id, incident_key=key, alert_ids=[alert.alert_id], category=alert.category.value,
-        customer_id=_affected_customer(alert), account_id=_account(alert), score=alert.score, band=alert.band.value,
-        status=CaseStatus.new.value, created_at=stamp, updated_at=stamp,
-    ))
+    case = CaseRow(case_id=case_id, alert_ids=[], category="", score=0, band="", status=CaseStatus.new.value,
+                   created_at=stamp, updated_at=stamp, grouping_reason=reason, priority_factors=[])
+    session.add(case)
     session.flush()
-    session.add(CaseEventRow(case_id=case_id, at=stamp, actor="system", to_status=CaseStatus.new.value,
-                             note=f"Opened from alert {alert.alert_id}"))
+    session.add(CaseEventRow(case_id=case_id, at=stamp, actor="system", to_status=CaseStatus.new.value, note=note,
+                             type="system", detail={}))
+    return case
 
 
-def save_run(session: Session, result: DetectionResult) -> DetectionResult:
+def case_incidents(session: Session, case_id: str) -> list[str]:
+    return list(session.scalars(select(CaseIncidentRow.incident_key).where(CaseIncidentRow.case_id == case_id)))
+
+
+def refresh_case(session: Session, case: CaseRow) -> None:
+    """Case fields follow the latest snapshot of its incidents. An analyst's band and the status are never overwritten."""
+    snapshots = incident_alerts(session, case_incidents(session, case.case_id))
+    latest = list({incident_key(a): a for a in snapshots}.values())
+    if not latest:
+        return
+    top = max(latest, key=lambda a: a.score)
+    ranked = prioritise(latest)
+    case.alert_ids = list(dict.fromkeys(a.alert_id for a in snapshots))
+    case.category, case.score, case.system_band = top.category.value, top.score, top.band.value
+    case.band = case.analyst_band or top.band.value
+    case.customer_id = _affected_customer(top)
+    case.account_id = next((x for x in map(_account, sorted(latest, key=lambda a: -a.score)) if x), None)
+    case.priority = max(r["priority"] for r in ranked)
+    case.exposure = sum(r["exposure"] for r in ranked)
+    case.needs_review = all(r["needs_review"] for r in ranked)
+    case.priority_factors = [*ranked[0]["factors"], f"{len(latest)} related alert(s) in this case"]
+    case.updated_at = now()
+
+
+def _sync_cases(session: Session, alerts: list[Alert], groups: list[dict]) -> None:
+    placed = {r.incident_key: r for r in session.scalars(select(CaseIncidentRow))}
+    touched = {placed[incident_key(a)].case_id for a in alerts if incident_key(a) in placed}
+    actionable = [a for a in alerts if a.band in ACTIONABLE]
+    for group in consolidate(actionable, groups):
+        keys = sorted({incident_key(a) for a in group["alerts"]})
+        free = [k for k in keys if not (k in placed and placed[k].pinned)]
+        if not free:
+            continue
+        current = sorted({placed[k].case_id for k in free if k in placed})
+        case_id = current[0] if current else f"CASE-{free[0][:10]}"
+        case = session.get(CaseRow, case_id)
+        if case is None:
+            case = _open_case(session, case_id, group["reason"], f"Opened from {len(free)} incident(s): {group['reason']}")
+        elif len(free) > 1:
+            case.grouping_reason = group["reason"]
+        for key in free:
+            if key not in placed:
+                placed[key] = CaseIncidentRow(incident_key=key, case_id=case_id, pinned=False)
+                session.add(placed[key])
+        touched.add(case_id)
+    session.flush()
+    for case_id in touched:
+        refresh_case(session, session.get(CaseRow, case_id))
+
+
+def save_run(session: Session, result: DetectionResult, groups: list[dict] | None = None) -> DetectionResult:
     """Same data and rules: reuse the completed run and make it current again, with no new rows."""
     existing = session.get(DetectionRunRow, result.run.run_id)
     if existing is not None:
@@ -70,10 +152,10 @@ def save_run(session: Session, result: DetectionResult) -> DetectionResult:
                                 payload=result.run.model_dump(mode="json")))
     session.flush()
     for alert in result.alerts:
-        key = incident_key(alert)
-        session.add(AlertRow(detection_run_id=result.run.run_id, alert_id=alert.alert_id, incident_key=key,
-                             payload=alert.model_dump(mode="json")))
-        _sync_case(session, alert, key)
+        session.add(AlertRow(detection_run_id=result.run.run_id, alert_id=alert.alert_id,
+                             incident_key=incident_key(alert), payload=alert.model_dump(mode="json")))
+    session.flush()
+    _sync_cases(session, result.alerts, groups or [])
     session.commit()
     return result
 
@@ -93,10 +175,10 @@ def latest_alerts(session: Session) -> list[Alert]:
     return run_alerts(session, run.run_id) if run else []
 
 
-def incident_alerts(session: Session, key: str) -> list[Alert]:
-    """Every snapshot of one incident, oldest run first."""
+def incident_alerts(session: Session, keys: list[str]) -> list[Alert]:
+    """Every snapshot of these incidents, oldest run first."""
     query = (select(AlertRow).join(DetectionRunRow, AlertRow.detection_run_id == DetectionRunRow.run_id)
-             .where(AlertRow.incident_key == key).order_by(DetectionRunRow.sequence))
+             .where(AlertRow.incident_key.in_(keys)).order_by(DetectionRunRow.sequence, AlertRow.alert_id))
     return [Alert(**r.payload) for r in session.scalars(query)]
 
 

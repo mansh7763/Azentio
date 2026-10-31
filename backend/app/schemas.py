@@ -40,6 +40,7 @@ class Direction(str, Enum):
 class CaseStatus(str, Enum):
     new = "New"
     requires_investigation = "Requires Investigation"
+    awaiting_information = "Awaiting Information"
     false_positive = "False Positive"
     escalated = "Escalated"
     confirmed_fraud = "Confirmed Fraud"
@@ -207,9 +208,18 @@ class Case(BaseModel):
     notes: str | None = None
     created_at: datetime
     updated_at: datetime
+    grouping_reason: str = ""
+    system_band: Band | None = None  # the detector's classification; `band` shows an analyst's correction
+    priority: int = 0
+    exposure: float = 0
+    needs_review: bool = False
+    priority_factors: list[str] = Field(default_factory=list)
 
 
 class CaseEvent(BaseModel):
+    id: int | None = None
+    type: Literal["decision", "action", "ai_assessment", "note", "correction", "system"] = "decision"
+    detail: dict = Field(default_factory=dict)
     case_id: str
     at: datetime
     actor: str
@@ -222,6 +232,28 @@ class CaseDecision(BaseModel):
     status: CaseStatus
     note: str | None = None
     actor: str = "analyst"
+
+
+class CaseAction(BaseModel):
+    action: Literal["confirm", "false_positive", "request_info", "escalate", "recommend_hold",
+                    "recommend_verification", "conclude", "reclassify"]
+    note: str
+    actor: str = "analyst"
+    band: Band | None = None  # reclassify: the new band
+    outcome: Literal["Confirmed Fraud", "Closed"] | None = None  # conclude: defaults to Closed
+
+
+class CaseSplit(BaseModel):
+    alert_ids: list[str]
+    reason: str
+    actor: str = "analyst"
+
+
+class CaseEventCreate(BaseModel):
+    type: Literal["ai_assessment", "note", "correction"]
+    note: str
+    actor: str = "analyst"
+    detail: dict = Field(default_factory=dict)
 
 
 class CaseDetail(Case):

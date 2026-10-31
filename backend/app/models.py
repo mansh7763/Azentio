@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -152,7 +152,6 @@ class CaseRow(Base):
     __tablename__ = "fraud_case"
 
     case_id: Mapped[str] = mapped_column(String, primary_key=True)
-    incident_key: Mapped[str] = mapped_column(String, unique=True)
     alert_ids: Mapped[list] = mapped_column(JSON)
     category: Mapped[str] = mapped_column(String)
     customer_id: Mapped[str | None] = mapped_column(String, index=True)
@@ -164,6 +163,22 @@ class CaseRow(Base):
     notes: Mapped[str | None] = mapped_column(String)
     created_at: Mapped[datetime] = mapped_column(DateTime)
     updated_at: Mapped[datetime] = mapped_column(DateTime)
+    grouping_reason: Mapped[str] = mapped_column(String, default="")
+    system_band: Mapped[str | None] = mapped_column(String)
+    analyst_band: Mapped[str | None] = mapped_column(String)  # survives re-runs; the system band stays recorded
+    priority: Mapped[int] = mapped_column(Integer, default=0)
+    exposure: Mapped[float] = mapped_column(Float, default=0)
+    needs_review: Mapped[bool] = mapped_column(Boolean, default=False)
+    priority_factors: Mapped[list] = mapped_column(JSON, default=list)
+
+
+class CaseIncidentRow(Base):
+    """Which case holds an incident. `pinned` is an analyst's split: consolidation never moves a pinned incident."""
+    __tablename__ = "case_incident"
+
+    incident_key: Mapped[str] = mapped_column(String, primary_key=True)
+    case_id: Mapped[str] = mapped_column(ForeignKey("fraud_case.case_id"), index=True)
+    pinned: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class CaseEventRow(Base):
@@ -177,6 +192,8 @@ class CaseEventRow(Base):
     from_status: Mapped[str | None] = mapped_column(String)
     to_status: Mapped[str] = mapped_column(String)
     note: Mapped[str | None] = mapped_column(String)
+    type: Mapped[str] = mapped_column(String, default="decision")
+    detail: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
 class RuleOverrideRow(Base):
