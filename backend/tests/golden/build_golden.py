@@ -268,6 +268,11 @@ for cid, n, amount, desc in (("C026", 1, 120000, "Water damage to kitchen"), ("C
                    "incident_date": iso(D + timedelta(days=9 + n)), "amount": str(amount), "description": desc,
                    "payout_account": "A-C011", "timestamp": iso(D + timedelta(days=10 + n))})
 
+# Pattern Scout demo — a second quiet linked group: two customers registered with the same phone number and
+# nothing else unusual. No rule alerts on them; Pattern Scout proposes it next to the DEV-HOME household.
+customer("C027", "Kiran Rao", "21 Lake View", "Mysuru", phone="9811122233")
+customer("C028", "Meera Rao", "21 Lake View", "Mysuru", phone="9811122233")
+
 
 def write(name, rows):
     with open(OUT / f"{name}.csv", "w", newline="", encoding="utf-8") as f:
