@@ -1,5 +1,7 @@
 """Mitigating factors for transfers (the 'legitimate lookalike' defence)."""
 
+from bisect import bisect_left
+
 import pandas as pd
 
 from app.detect.config import RulesConfig
@@ -31,6 +33,13 @@ def mitigation_signals(ds: Dataset, cfg: RulesConfig, profiles: pd.DataFrame, bu
     customers = ds.get("customers")
     onboarded = dict(zip(customers["customer_id"], customers["onboarding_date"])) if "onboarding_date" in customers else {}
 
+    # Successful logins per (customer, device), in time order, so "seen before this payment" is a binary search
+    # rather than a scan of every login for every transaction.
+    known: dict[tuple, tuple[list, list]] = {}
+    if not ok_logins.empty:
+        for key, g in ok_logins.sort_values(["timestamp", "seq"]).groupby(["customer_id", "device_id"], sort=False):
+            known[key] = (list(g["timestamp"]), list(g["event_id"]))
+
     out: list[Signal] = []
     for _, t in txns.sort_values("seq").iterrows():
         prof = profiles.loc[t["txn_id"]]
@@ -48,11 +57,11 @@ def mitigation_signals(ds: Dataset, cfg: RulesConfig, profiles: pd.DataFrame, bu
 
         device = t.get("device_id")
         if cfg.enabled("MT-KNOWN") and isinstance(device, str) and not ok_logins.empty:
-            seen = ok_logins[(ok_logins["customer_id"] == t["customer_id"]) & (ok_logins["device_id"] == device)
-                             & (ok_logins["timestamp"] < t["timestamp"])]
-            if len(seen) >= 2:
+            times, events = known.get((t["customer_id"], device), ([], []))
+            before = bisect_left(times, t["timestamp"])
+            if before >= 2:
                 out.append(_mit(cfg, "MT-KNOWN", t, f"Made from the customer's usual device {device}",
-                                list(seen["event_id"].tail(3))))
+                                events[max(0, before - 3):before]))
 
         since = onboarded.get(t["customer_id"])
         days = tenure_p.get("days", 365)

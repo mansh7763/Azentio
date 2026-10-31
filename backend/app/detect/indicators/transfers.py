@@ -1,5 +1,8 @@
 """Transfer indicators: TX-01..05 and the high-value flag HV-01."""
 
+from bisect import bisect_left
+
+import numpy as np
 import pandas as pd
 
 from app.detect.config import RulesConfig
@@ -25,14 +28,20 @@ def hv_threshold(ds: Dataset, cfg: RulesConfig) -> dict[str, float | None]:
         return {tid: float(params["threshold"]) for tid in txns["txn_id"]}
     quantile, min_samples = params.get("quantile", 0.9), params.get("min_samples", 20)
     usable = baseline_rows(txns)
-    seen: dict[str, list[float]] = {}
+    ordered = txns.sort_values("seq")
+    currencies = ordered["currency"].map(lambda c: str(c or "").upper()) if "currency" in ordered         else pd.Series([""] * len(ordered), index=ordered.index)
+    # One growing array per currency; np.percentile with "linear" is exactly what Series.quantile computes,
+    # without building a new Series for every transaction (that was quadratic on large uploads).
+    seen: dict[str, np.ndarray] = {}
+    count: dict[str, int] = {}
     out: dict[str, float | None] = {}
-    for idx, t in txns.sort_values("seq").iterrows():
-        currency = str(t.get("currency") or "").upper()
-        prior = seen.setdefault(currency, [])
-        out[t["txn_id"]] = float(pd.Series(prior).quantile(quantile)) if len(prior) >= min_samples else None
+    for idx, tid, amount, currency in zip(ordered.index, ordered["txn_id"], ordered["amount"], currencies):
+        n = count.get(currency, 0)
+        prior = seen.setdefault(currency, np.empty(len(ordered)))
+        out[tid] = float(np.percentile(prior[:n], quantile * 100, method="linear")) if n >= min_samples else None
         if usable[idx]:
-            prior.append(float(t["amount"]))
+            prior[n] = float(amount)
+            count[currency] = n + 1
     return out
 
 
@@ -60,7 +69,14 @@ def transfer_signals(ds: Dataset, cfg: RulesConfig, profiles: pd.DataFrame) -> l
     fan_window = pd.Timedelta(hours=p5.get("hours", 24))
     kinds = txns["type"] if "type" in txns else pd.Series([None] * len(txns), index=txns.index)
     outbound = txns[[not is_inbound(k) for k in kinds]]
-    by_customer = {cid: g.sort_values("seq") for cid, g in outbound.groupby("customer_id")}
+    # Per customer, in seq order (which is time order after prepare): a window ending at a transaction is a
+    # contiguous slice found by binary search, instead of filtering the customer's frame for every transaction.
+    first_flag = profiles["is_first_payment"].to_dict()
+    by_customer = {}
+    for cid, g in outbound.groupby("customer_id"):
+        g = g.sort_values("seq")
+        by_customer[cid] = (list(g["timestamp"]), list(g["txn_id"]), list(g["beneficiary_account"]),
+                            {tid: i for i, tid in enumerate(g["txn_id"])})
 
     for _, t in outbound.sort_values("seq").iterrows():  # incoming credits are never scored as outgoing risk
         prof = profiles.loc[t["txn_id"]]
@@ -82,19 +98,23 @@ def transfer_signals(ds: Dataset, cfg: RulesConfig, profiles: pd.DataFrame) -> l
         if cfg.enabled("TX-03") and prof["is_new_payee"] is True:
             out.append(_signal(cfg, "TX-03", t, f"First payment to beneficiary {t['beneficiary_account']}"))
 
-        own = by_customer.get(t["customer_id"], outbound[outbound["txn_id"] == t["txn_id"]])  # unresolved: itself only
-        recent = own[(own["seq"] <= t["seq"]) & (own["timestamp"] >= t["timestamp"] - window)]
+        own = by_customer.get(t["customer_id"])
+        if own is None:  # unresolved customer: the transaction is its own history
+            own = ([t["timestamp"]], [t["txn_id"]], [t["beneficiary_account"]], {t["txn_id"]: 0})
+        times, tids, payees_of, position = own
+        end = position[t["txn_id"]] + 1
+        recent = tids[bisect_left(times, t["timestamp"] - window, 0, end):end]
         if cfg.enabled("TX-04") and len(recent) >= p4.get("count", 5):
             mins = int(window.total_seconds() // 60)
-            out.append(_signal(cfg, "TX-04", t, f"{len(recent)} transfers within {mins} minutes", event_ids=list(recent["txn_id"])))
+            out.append(_signal(cfg, "TX-04", t, f"{len(recent)} transfers within {mins} minutes", event_ids=recent))
 
         if cfg.enabled("TX-05"):
-            fan = own[(own["seq"] <= t["seq"]) & (own["timestamp"] >= t["timestamp"] - fan_window)]
-            first = fan[[profiles.loc[i, "is_first_payment"] is True for i in fan["txn_id"]]]
-            payees = first["beneficiary_account"].nunique()
+            start = bisect_left(times, t["timestamp"] - fan_window, 0, end)
+            first = [i for i in range(start, end) if first_flag[tids[i]] is True]
+            payees = len({payees_of[i] for i in first})
             if payees >= p5.get("new_payees", 4):
                 hours = int(fan_window.total_seconds() // 3600)
-                out.append(_signal(cfg, "TX-05", t, f"Money sent to {payees} new beneficiaries within {hours} hours", event_ids=list(first["txn_id"])))
+                out.append(_signal(cfg, "TX-05", t, f"Money sent to {payees} new beneficiaries within {hours} hours", event_ids=[tids[i] for i in first]))
 
         threshold = thresholds.get(t["txn_id"])
         if cfg.enabled("HV-01") and threshold is not None and amount >= threshold:

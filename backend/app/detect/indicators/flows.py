@@ -86,14 +86,16 @@ def structuring_signals(ds: Dataset, cfg: RulesConfig, profiles: pd.DataFrame) -
     z_min = cfg.params("TX-01")["z_min"]
     min_prior = cfg.params("MT-PAYEE")["min_prior"]
     hv = hv_threshold(ds, cfg)
+    source, median = profiles["baseline_source"].to_dict(), profiles["prior_median"].to_dict()
+    denom = profiles["denom"].to_dict()
+    established = (profiles["prior_same_payee_similar"].astype(int) >= min_prior).to_dict()
 
-    def trigger(t) -> float | None:
-        prof = profiles.loc[t.txn_id]
+    def trigger(txn_id) -> float | None:
         refs = []
-        if prof["baseline_source"] == "customer":
-            refs.append(float(prof["prior_median"]) + z_min * float(prof["denom"]))
-        if hv.get(t.txn_id):
-            refs.append(float(hv[t.txn_id]))
+        if source[txn_id] == "customer":
+            refs.append(float(median[txn_id]) + z_min * float(denom[txn_id]))
+        if hv.get(txn_id):
+            refs.append(float(hv[txn_id]))
         return min(refs) if refs else None
 
     out: list[Signal] = []
@@ -104,17 +106,15 @@ def structuring_signals(ds: Dataset, cfg: RulesConfig, profiles: pd.DataFrame) -
             window = [r for r in rows[:i + 1] if r.timestamp >= t.timestamp - span]
             # The bar as it stood before this window: payments being judged must not raise their own threshold
             # (structured payments enter the baseline and would otherwise hide the later ones).
-            ref = profiles.loc[window[0].txn_id]
-            level = trigger(window[0])
+            ref = window[0].txn_id
+            level = trigger(ref)
             if level is None:
                 continue
 
             def near(r) -> bool:
                 amount = float(r.amount)
-                unusual = (ref["baseline_source"] != "customer"
-                           or (amount - float(ref["prior_median"])) / float(ref["denom"]) >= p["min_z"])
-                return (p["low"] * level <= amount < p["high"] * level and unusual
-                        and not _established(profiles, r.txn_id, min_prior))
+                unusual = source[ref] != "customer" or (amount - float(median[ref])) / float(denom[ref]) >= p["min_z"]
+                return p["low"] * level <= amount < p["high"] * level and unusual and not established[r.txn_id]
 
             hits = [r for r in window if near(r)]
             if len(hits) >= p["count"] and hits[-1] is t:

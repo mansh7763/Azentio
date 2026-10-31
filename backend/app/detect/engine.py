@@ -95,6 +95,22 @@ def _fingerprint(ds: Dataset) -> str:
 def run_detection(dataset: Dataset, config: RulesConfig | None = None, run_id: str | None = None,
                   overrides: dict | None = None) -> DetectionResult:
     cfg = config or load_rules(overrides)
+    return score_signals(collect_signals(dataset, cfg), cfg, run_id)
+
+
+@dataclass
+class Collected:
+    """Everything detection derives from the data before scoring. Evaluation re-scores it under other weights,
+    bands or with an indicator removed, without recomputing signals (evals/evaluate.py)."""
+    ds: Dataset
+    profiles: pd.DataFrame
+    bursts: list
+    signals: list[Signal]
+    run_ids: list[str]
+    skipped: dict[str, str]
+
+
+def collect_signals(dataset: Dataset, cfg: RulesConfig) -> Collected:
     ds = prepare(dataset, cfg)
     run_ids, skipped = available(ds, cfg)
     can_run = set(run_ids)
@@ -113,7 +129,12 @@ def run_detection(dataset: Dataset, config: RulesConfig | None = None, run_id: s
         if ds.has("transactions"):
             signals += loan_outflow_signals(ds, cfg, profiles, app_signals)
     signals = [s for s in signals if s.indicator_id in can_run]
+    return Collected(ds, profiles, bursts, signals, run_ids, skipped)
 
+
+def score_signals(parts: Collected, cfg: RulesConfig, run_id: str | None = None) -> DetectionResult:
+    ds, profiles, bursts, signals, run_ids, skipped = (parts.ds, parts.profiles, parts.bursts, parts.signals,
+                                                       parts.run_ids, parts.skipped)
     times = [df[c].max() for name, df in ds.frames.items() if not df.empty
              for c in ("timestamp",) if c in df]
     created = max(times).to_pydatetime() if times else datetime(1970, 1, 1, tzinfo=timezone.utc)
